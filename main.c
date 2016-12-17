@@ -91,6 +91,9 @@ void object_print(Object *object) {
         case DOUBLE:
             printf("%lf", object->u.lf);
             break;
+	case STRING:
+            printf("\"%s\"", object->u.s);
+	    break;
         case LIST:
             printf("(");
             node = object->u.list;
@@ -111,6 +114,7 @@ int main() {
     list_prepend(object, new_int(1));
     list_prepend(object, new_double(7.2));
     list_prepend(object, new_int(3));
+    list_prepend(object, new_string("test"));
     object_print(object);
     return 0;
 }
