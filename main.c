@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "object.h"
-#include "tokenize.h"
 #include "parse.h"
 
 char *read_to_string(FILE *file) {
