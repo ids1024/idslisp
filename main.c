@@ -178,9 +178,9 @@ Object *str_to_num_object(char *text) {
 }
 
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
-    int nitems = 0, j;
-    Object *item, **items = NULL;
-    ListNode *list = NULL;
+    int j;
+    Object *item;
+    ListNode *list=NULL, *prev_node=NULL, *node;
 
     for (; *i<ntoks; (*i)++) {
         if (strcmp(tokens[*i], "\"") == 0) {
@@ -191,11 +191,6 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
             (*i)++;
             item = _parse_iter(tokens, ntoks, i);
         } else if (strcmp(tokens[*i], ")") == 0) {
-            // Turn array into linked list
-            for (j=nitems-1; j>=0; j--)
-                list = new_node(list, items[j]);
-            free(items);
-
             Object *object = malloc(sizeof(Object));
             object->type = LIST;
             object->u.list = list;
@@ -208,9 +203,13 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
             }
         }
 
-        nitems++;
-        items = realloc(items, nitems * sizeof(Object*));
-        items[nitems-1] = item;
+        // Append to linked list
+        node = new_node(NULL, item);
+        if (list == NULL)
+            list = node;
+        if (prev_node != NULL)
+            prev_node->next = node;
+        prev_node = node;
     }
 
     printf("Error: missing ')'\n");
