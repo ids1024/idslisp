@@ -29,6 +29,7 @@ Object *eval(ListNode *list) {
     // Recursively evaluate arguments
     for (ListNode *node=args; node!=NULL; node=node->next) {
         if (node->value->type == LIST) {
+            // Replace list with what it evluates to
             old_val = node->value;
             node->value = eval(node->value->u.list);
             object_free(old_val);
