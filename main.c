@@ -140,27 +140,18 @@ char **tokenize(char *code, int *ntoks) {
             curtok = strdup("\"");
             _add_token(&tokens, ntoks, &curtok, &len);
             instr = !instr;
-            continue;
+        } else if (!instr && isspace(code[i])) {
+            _add_token(&tokens, ntoks, &curtok, &len);
+        } else if (!instr && (code[i] == '(' || code[i] == ')')) {
+            _add_token(&tokens, ntoks, &curtok, &len);
+            len = 1;
+            curtok = strndup(&code[i], 1);
+            _add_token(&tokens, ntoks, &curtok, &len);
+        } else {
+            len++;
+            curtok = realloc(curtok, len);
+            curtok[len-1] = code[i];
         }
-
-        if (!instr) {
-            if (isspace(code[i])) {
-                _add_token(&tokens, ntoks, &curtok, &len);
-                continue;
-            } else if (code[i] == '(' || code[i] == ')') {
-                _add_token(&tokens, ntoks, &curtok, &len);
-                len = 1;
-                curtok = malloc(2);
-                curtok[0] = code[i];
-                curtok[1] = '\0';
-                _add_token(&tokens, ntoks, &curtok, &len);
-                continue;
-            } 
-        }
-
-        len++;
-        curtok = realloc(curtok, len);
-        curtok[len-1] = code[i];
     }
 
     _add_token(&tokens, ntoks, &curtok, &len);
