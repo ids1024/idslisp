@@ -47,14 +47,10 @@ void list_prepend(Object *object, Object *value) {
 }
 
 Object *object_free(Object *object) {
-    ListNode *node;
-
     switch (object->type) {
         case LIST:
-            node = object->u.list;
-            while (node != NULL) {
-                node = object->u.list;
-                free(node->value);
+            for (ListNode *node=object->u.list; node!=NULL; node=node->next) {
+                object_free(node->value);
                 free(node);
             }
             break;

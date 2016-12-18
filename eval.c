@@ -26,13 +26,12 @@ Object *eval(ListNode *list) {
     command = list->value->u.s;
     args = list->next;
 
-    // Recursively evaluate
+    // Recursively evaluate arguments
     for (ListNode *node=args; node!=NULL; node=node->next) {
         if (node->value->type == LIST) {
             old_val = node->value;
-            // FIXME free full syntax tree
             node->value = eval(node->value->u.list);
-            free(old_val);
+            object_free(old_val);
         }
     }
 
