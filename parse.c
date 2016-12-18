@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "parse.h"
 #include "object.h"
 #include "tokenize.h"
 
