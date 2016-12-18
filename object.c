@@ -6,6 +6,14 @@
 #include "object.h"
 
 
+#define _NEW_OBJECT(typename, utype, value) ({ \
+        Object *object = malloc(sizeof(Object)); \
+        object->type = typename; \
+        object->u.utype = value; \
+        object; \
+    })
+
+
 ListNode *new_node(ListNode *next, Object *value) {
     ListNode *node = malloc(sizeof(ListNode));
     node->value = value;
@@ -14,31 +22,19 @@ ListNode *new_node(ListNode *next, Object *value) {
 }
 
 Object *new_int(long int value) {
-    Object *object = malloc(sizeof(Object));
-    object->type = INT;
-    object->u.ld = value;
-    return object;
+    return _NEW_OBJECT(INT, ld, value);
 }
 
 Object *new_double(double value) {
-    Object *object = malloc(sizeof(Object));
-    object->type = DOUBLE;
-    object->u.lf = value;
-    return object;
+    return _NEW_OBJECT(DOUBLE, lf, value);
 }
 
 Object *new_string(char *value) {
-    Object *object = malloc(sizeof(Object));
-    object->type = STRING;
-    object->u.s = strdup(value);
-    return object;
+    return _NEW_OBJECT(STRING, s, strdup(value));
 }
 
 Object *new_list(ListNode *value) {
-    Object *object = malloc(sizeof(Object));
-    object->type = LIST;
-    object->u.list = value;
-    return object;
+    return _NEW_OBJECT(LIST, list, value);
 }
 
 void list_prepend(Object *object, Object *value) {
