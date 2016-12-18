@@ -6,6 +6,7 @@
 #include "parse.h"
 #include "object.h"
 #include "tokenize.h"
+#include "util.h"
 
 
 Object *_str_to_num_object(char *text) {
@@ -54,8 +55,7 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
         prev_node = node;
     }
 
-    printf("Error: missing ')'\n");
-    exit(1);
+    error_message("missing ')'");
 }
 
 Object **parse(char *code, int *nobjects) {
@@ -75,8 +75,7 @@ Object **parse(char *code, int *nobjects) {
             objects = realloc(objects, *nobjects * sizeof(Object*));
             objects[*nobjects-1] = object;
         } else {
-            printf("Error: '%s' not allowed here.", tokens[i]);
-            exit(1);
+            error_message("'%s' not allowed here.", tokens[i]);
         }
     }
 

@@ -4,6 +4,7 @@
 
 #include "object.h"
 #include "builtins.h"
+#include "util.h"
 
 
 Object *eval(ListNode *list) {
@@ -11,17 +12,11 @@ Object *eval(ListNode *list) {
     ListNode *args;
     Object *old_val;
 
-    if (list == NULL) {
-        printf("Error: Cannot evaluate empty list.\n");
-        exit(1);
-    }
+    if (list == NULL)
+        error_message("Cannot evaluate empty list.");
 
-    if (list->value->type != SYMBOL) {
-        printf("Error: Cannot evaluate non-symbol.\n");
-        object_print(list->value);
-        printf("\n");
-        exit(1);
-    }
+    if (list->value->type != SYMBOL)
+        error_message("Cannot evaluate non-symbol.");
 
     command = list->value->u.s;
     args = list->next;
@@ -46,7 +41,6 @@ Object *eval(ListNode *list) {
     } else if (strcmp(command, "/") == 0) {
         return builtin_divide(args);
     } else {
-        printf("Error: '%s' undefined.\n");
-        exit(1);
+        error_message("Error: '%s' undefined.\n", command);
     }
 }

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "builtins.h"
+#include "util.h"
 
 
 #define _OPERATOR_BUILTIN(operator, args) ({ \
@@ -29,8 +30,7 @@
                     dvalue operator node->value->u.lf; \
                 break; \
             default: \
-                printf("Invald argument\n"); \
-                exit(1); \
+                error_message("Invalid argument"); \
         } \
     } \
     \

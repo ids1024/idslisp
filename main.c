@@ -1,12 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <readline/readline.h>
 
 #include "object.h"
 #include "parse.h"
 #include "eval.h"
+#include "util.h"
 
 char *read_to_string(FILE *file) {
     // FIXME: performance
@@ -42,10 +44,8 @@ int main(int argc, char *argv[]) {
         }
     } else if (argc == 2) {
         file = fopen(argv[1], "r");
-        if (file == NULL) {
-            perror("Error");
-            exit(1);
-        }
+        if (file == NULL)
+            error_message("%s", strerror(errno));
 
         text = read_to_string(file);
 
@@ -56,8 +56,7 @@ int main(int argc, char *argv[]) {
             printf("\n");
         }
     } else {
-        printf("Wrong number of arguments.\n");
-        exit(1);
+        error_message("Wrong number of arguments.");
     }
 
     return 0;
