@@ -25,6 +25,6 @@ util.o: util.c util.h
 	gcc -g -c -o $@ $<
 
 clean:
-	rm -f lisp .o
+	rm -f lisp *.o
 
 .PHONY: all clean
