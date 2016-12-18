@@ -52,10 +52,10 @@ Object *new_string(char *value) {
     return object;
 }
 
-Object *new_list() {
+Object *new_list(ListNode *value) {
     Object *object = malloc(sizeof(Object));
     object->type = LIST;
-    object->u.list = NULL;
+    object->u.list = value;
     return object;
 }
 
@@ -191,10 +191,7 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
             (*i)++;
             item = _parse_iter(tokens, ntoks, i);
         } else if (strcmp(tokens[*i], ")") == 0) {
-            Object *object = malloc(sizeof(Object));
-            object->type = LIST;
-            object->u.list = list;
-            return object;
+            return new_list(list);
         } else {
             item = str_to_num_object(tokens[*i]);
             if (item == NULL) {
@@ -247,7 +244,7 @@ Object **parse(char *code, int *nobjects) {
 }
 
 int main() {
-    Object *object = new_list();
+    Object *object = new_list(NULL);
     list_prepend(object, new_int(1));
     list_prepend(object, new_double(7.2));
     list_prepend(object, new_int(3));
