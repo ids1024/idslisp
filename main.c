@@ -12,7 +12,7 @@ struct ListNode_;
 typedef struct Object_ {
     Type type;
     union {
-        int d;
+        long int ld;
         double lf;
         char *s;
         struct ListNode_ *list;
@@ -31,10 +31,10 @@ ListNode *new_node(ListNode *next, Object *value) {
     return node;
 }
 
-Object *new_int(int value) {
+Object *new_int(long int value) {
     Object *object = malloc(sizeof(Object));
     object->type = INT;
-    object->u.d = value;
+    object->u.ld = value;
     return object;
 }
 
@@ -88,7 +88,7 @@ void object_print(Object *object) {
 
     switch (object->type) {
         case INT:
-            printf("%d", object->u.d);
+            printf("%d", object->u.ld);
             break;
         case DOUBLE:
             printf("%lf", object->u.lf);
@@ -129,7 +129,7 @@ char **tokenize(char *code, int *ntoks) {
     int i, len = 0;
     char *curtok = NULL;
     char **tokens = NULL;
-    bool instr;
+    bool instr = false;
 
     *ntoks = 0;
 
@@ -137,7 +137,8 @@ char **tokenize(char *code, int *ntoks) {
         if (code[i] == '"') {
             _add_token(&tokens, ntoks, &curtok, &len);
             len = 1;
-            curtok = strdup("\"");
+            curtok = malloc(1);
+            curtok[0] = '"';
             _add_token(&tokens, ntoks, &curtok, &len);
             instr = !instr;
         } else if (!instr && isspace(code[i])) {
@@ -145,7 +146,8 @@ char **tokenize(char *code, int *ntoks) {
         } else if (!instr && (code[i] == '(' || code[i] == ')')) {
             _add_token(&tokens, ntoks, &curtok, &len);
             len = 1;
-            curtok = strndup(&code[i], 1);
+            curtok = malloc(1);
+            curtok[0] = code[i];
             _add_token(&tokens, ntoks, &curtok, &len);
         } else {
             len++;
@@ -159,6 +161,92 @@ char **tokenize(char *code, int *ntoks) {
     return tokens;
 }
 
+Object *str_to_num_object(char *text) {
+    char *endptr;
+    long int inum;
+    double fnum;
+
+    inum = strtol(text, &endptr, 10);
+    if (*(endptr+1) == '\0')
+        return new_int(inum);
+
+    fnum = strtod(text, &endptr);
+    if (*(endptr+1) == '\0')
+        return new_double(fnum);
+
+    return NULL;
+}
+
+Object *_parse_iter(char **tokens, int ntoks, int *i) {
+    int nitems = 0, j;
+    Object *item, **items = NULL;
+    ListNode *list = NULL;
+
+    for (; *i<ntoks; (*i)++) {
+        if (strcmp(tokens[*i], "\"") == 0) {
+            assert((ntoks >= *i+3) && (strcmp(tokens[*i+2], "\"") == 0));
+            item = new_string(tokens[*i+1]);
+            (*i) += 2;
+        } else if (strcmp(tokens[*i], "(") == 0) {
+            (*i)++;
+            item = _parse_iter(tokens, ntoks, i);
+        } else if (strcmp(tokens[*i], ")") == 0) {
+            // Turn array into linked list
+            for (j=nitems-1; j>=0; j--)
+                list = new_node(list, items[j]);
+            free(items);
+
+            Object *object = malloc(sizeof(Object));
+            object->type = LIST;
+            object->u.list = list;
+            return object;
+        } else {
+            item = str_to_num_object(tokens[*i]);
+            if (item == NULL) {
+                printf("Error: token '%s' not recognized.", tokens[*i]);
+                exit(1);
+            }
+        }
+
+        nitems++;
+        items = realloc(items, nitems * sizeof(Object*));
+        items[nitems-1] = item;
+    }
+
+    printf("Error: missing ')'\n");
+    exit(1);
+}
+
+Object **parse(char *code, int *nobjects) {
+    int ntoks, i;
+    char **tokens;
+    Object *object, **objects = NULL;
+    
+    *nobjects = 0;
+    tokens = tokenize(code, &ntoks);
+
+    for (i=0; i<ntoks; i++) {
+        if (strcmp(tokens[i], "(") == 0) {
+            i++;
+            object = _parse_iter(tokens, ntoks, &i);
+
+            (*nobjects)++;
+            objects = realloc(objects, *nobjects * sizeof(Object*));
+            objects[*nobjects-1] = object;
+        } else {
+            printf("Error: '%s' not allowed here.", tokens[i]);
+            exit(1);
+        }
+    }
+
+    // Free the tokens array
+    for (i=0; i<ntoks; i++)
+        free(tokens[i]);
+    free(tokens);
+
+    return objects;
+}
+
 int main() {
     Object *object = new_list();
     list_prepend(object, new_int(1));
@@ -168,10 +256,16 @@ int main() {
     object_print(object);
 
     int ntoks;
-    char **toks = tokenize("(print 1.2 \"test\"  (1 2 3))", &ntoks);
+    char **toks = tokenize("(1.2 \"test\"  (1 2 3))", &ntoks);
     printf("Tokens: %d\n", ntoks);
     for (int i = 0; i < ntoks; i++) {
         printf("%s\n", toks[i]);
+    }
+    int nobjects;
+    Object **objects = parse("(1.2 \"test\"  (1 2 3))", &nobjects);
+    for (int i = 0; i < nobjects; i++) {
+        object_print(objects[i]);
+        printf("\n");
     }
 
     return 0;
