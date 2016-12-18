@@ -30,6 +30,7 @@ Object *eval(ListNode *list) {
     for (ListNode *node=args; node!=NULL; node=node->next) {
         if (node->value->type == LIST) {
             old_val = node->value;
+            // FIXME free full syntax tree
             node->value = eval(node->value->u.list);
             free(old_val);
         }
