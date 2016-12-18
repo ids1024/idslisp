@@ -111,14 +111,18 @@ void object_print(Object *object) {
     }
 }
 
+void _append_token(char ***tokens, int *ntoks, char *token) {
+    (*ntoks)++;
+    *tokens = realloc(*tokens, *ntoks * sizeof(char*));
+    (*tokens)[*ntoks-1] = token;
+}
+
 void _add_token(char ***tokens, int *ntoks, char **curtok, int *len) {
     if (*len != 0) {
         *curtok = realloc(*curtok, *len + 1);
         (*curtok)[*len] = '\0';
 
-        (*ntoks)++;
-        *tokens = realloc(*tokens, *ntoks * sizeof(char*));
-        (*tokens)[*ntoks-1] = *curtok;
+        _append_token(tokens, ntoks, *curtok);
 
         *len = 0;
         *curtok = NULL;
@@ -136,19 +140,13 @@ char **tokenize(char *code, int *ntoks) {
     for (i=0; code[i] != '\0'; i++) {
         if (code[i] == '"') {
             _add_token(&tokens, ntoks, &curtok, &len);
-            len = 1;
-            curtok = malloc(1);
-            curtok[0] = '"';
-            _add_token(&tokens, ntoks, &curtok, &len);
+            _append_token(&tokens, ntoks, strdup("\""));
             instr = !instr;
         } else if (!instr && isspace(code[i])) {
             _add_token(&tokens, ntoks, &curtok, &len);
         } else if (!instr && (code[i] == '(' || code[i] == ')')) {
             _add_token(&tokens, ntoks, &curtok, &len);
-            len = 1;
-            curtok = malloc(1);
-            curtok[0] = code[i];
-            _add_token(&tokens, ntoks, &curtok, &len);
+            _append_token(&tokens, ntoks, strndup(code+i, 1));
         } else {
             len++;
             curtok = realloc(curtok, len);
