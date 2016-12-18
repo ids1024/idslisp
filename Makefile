@@ -1,9 +1,15 @@
 all: lisp
 
-lisp: main.o parse.o tokenize.o object.o
+lisp: main.o eval.c builtins.o parse.o tokenize.o object.o
 	gcc -g -o $@ $^
 
 main.o: main.c parse.h object.h tokenize.h
+	gcc -g -c -o $@ $<
+
+eval.o: eval.c eval.h builtins.h object.h
+	gcc -g -c -o $@ $<
+
+builtins.o: builtins.c builtins.h object.h
 	gcc -g -c -o $@ $<
 
 parse.o: parse.c parse.h object.h tokenize.h

@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "object.h"
 #include "parse.h"
+#include "eval.h"
 
 char *read_to_string(FILE *file) {
     // FIXME: performance
@@ -41,7 +43,10 @@ int main(int argc, char *argv[]) {
 
     objects = parse(text, &nobjects);
     for (int i = 0; i < nobjects; i++) {
+        assert(objects[i]->type == LIST);
         object_print(objects[i]);
+        printf("\n");
+        object_print(eval(objects[i]->u.list));
         printf("\n");
     }
 

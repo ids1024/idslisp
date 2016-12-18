@@ -13,15 +13,12 @@ Object *_str_to_num_object(char *text) {
     long int inum;
     double fnum;
 
-    if (strcmp(text, "+") == 0 || strcmp(text, "-") == 0)
-        return NULL;
-
     inum = strtol(text, &endptr, 10);
-    if (*(endptr+1) == '\0')
+    if (*endptr == '\0')
         return new_int(inum);
 
     fnum = strtod(text, &endptr);
-    if (*(endptr+1) == '\0')
+    if (*endptr == '\0')
         return new_double(fnum);
 
     return NULL;
