@@ -1,7 +1,7 @@
 all: lisp
 
 lisp: main.o eval.c builtins.o parse.o tokenize.o object.o
-	gcc -g -o $@ $^
+	gcc -g -lreadline -o $@ $^
 
 main.o: main.c parse.h object.h tokenize.h
 	gcc -g -c -o $@ $<

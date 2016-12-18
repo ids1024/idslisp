@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <readline/readline.h>
+
 #include "object.h"
 #include "parse.h"
 #include "eval.h"
@@ -28,26 +30,34 @@ int main(int argc, char *argv[]) {
     FILE *file;
     char *text;
 
-    if (argc < 2) {
-        printf("Not enough arguments.\n");
+    if (argc == 1) {
+        for (;;) {
+            text = readline("> ");
+            objects = parse(text, &nobjects);
+            for (int i = 0; i < nobjects; i++) {
+                assert(objects[i]->type == LIST);
+                object_print(eval(objects[i]->u.list));
+                printf("\n");
+            }
+        }
+    } else if (argc == 2) {
+        file = fopen(argv[1], "r");
+        if (file == NULL) {
+            perror("Error");
+            exit(1);
+        }
+
+        text = read_to_string(file);
+
+        objects = parse(text, &nobjects);
+        for (int i = 0; i < nobjects; i++) {
+            assert(objects[i]->type == LIST);
+            object_print(eval(objects[i]->u.list));
+            printf("\n");
+        }
+    } else {
+        printf("Wrong number of arguments.\n");
         exit(1);
-    }
-
-    file = fopen(argv[1], "r");
-    if (file == NULL) {
-        perror("Error");
-        exit(1);
-    }
-
-    text = read_to_string(file);
-
-    objects = parse(text, &nobjects);
-    for (int i = 0; i < nobjects; i++) {
-        assert(objects[i]->type == LIST);
-        object_print(objects[i]);
-        printf("\n");
-        object_print(eval(objects[i]->u.list));
-        printf("\n");
     }
 
     return 0;
