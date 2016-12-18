@@ -33,6 +33,10 @@ Object *new_string(char *value) {
     return _NEW_OBJECT(STRING, s, strdup(value));
 }
 
+Object *new_symbol(char *value) {
+    return _NEW_OBJECT(SYMBOL, s, strdup(value));
+}
+
 Object *new_list(ListNode *value) {
     return _NEW_OBJECT(LIST, list, value);
 }
@@ -55,6 +59,7 @@ Object *object_free(Object *object) {
             }
             break;
         case STRING:
+        case SYMBOL:
             free(object->u.s);
             break;
     }
@@ -73,6 +78,9 @@ void object_print(Object *object) {
             break;
 	case STRING:
             printf("\"%s\"", object->u.s);
+	    break;
+        case SYMBOL:
+            printf("%s", object->u.s);
 	    break;
         case LIST:
             printf("(");

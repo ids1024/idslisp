@@ -13,6 +13,9 @@ Object *_str_to_num_object(char *text) {
     long int inum;
     double fnum;
 
+    if (strcmp(text, "+") == 0 || strcmp(text, "-") == 0)
+        return NULL;
+
     inum = strtol(text, &endptr, 10);
     if (*(endptr+1) == '\0')
         return new_int(inum);
@@ -41,10 +44,8 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
             return new_list(list);
         } else {
             item = _str_to_num_object(tokens[*i]);
-            if (item == NULL) {
-                printf("Error: token '%s' not recognized.", tokens[*i]);
-                exit(1);
-            }
+            if (item == NULL)
+                item = new_symbol(tokens[*i]);
         }
 
         // Append to linked list

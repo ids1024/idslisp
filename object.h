@@ -1,6 +1,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
-typedef enum Type_ {INT, DOUBLE, STRING, LIST} Type;
+typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, LIST} Type;
 
 struct ListNode_;
 
@@ -24,6 +24,7 @@ ListNode *new_node(ListNode *next, Object *value);
 Object *new_int(long int value);
 Object *new_double(double value);
 Object *new_string(char *value);
+Object *new_symbol(char *value);
 Object *new_list(ListNode *value);
 void list_prepend(Object *object, Object *value);
 Object *object_free(Object *object);
