@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
+#include <stdbool.h>
 
 typedef enum Type_ {INT, DOUBLE, STRING, LIST} Type;
 
@@ -101,12 +103,69 @@ void object_print(Object *object) {
                 object_print(node->value);
                 node = node->next;
                 if (node != NULL) {
-                    printf(", ");
+                    printf(" ");
                 }
             }
             printf(")");
             break;
     }
+}
+
+void _add_token(char ***tokens, int *ntoks, char **curtok, int *len) {
+    if (*len != 0) {
+        *curtok = realloc(*curtok, *len + 1);
+        (*curtok)[*len] = '\0';
+
+        (*ntoks)++;
+        *tokens = realloc(*tokens, *ntoks * sizeof(char*));
+        (*tokens)[*ntoks-1] = *curtok;
+
+        *len = 0;
+        *curtok = NULL;
+    }
+}
+
+char **tokenize(char *code, int *ntoks) {
+    int i, len = 0;
+    char *curtok = NULL;
+    char **tokens = NULL;
+    bool instr;
+
+    *ntoks = 0;
+
+    for (i=0; code[i] != '\0'; i++) {
+        if (code[i] == '"') {
+            _add_token(&tokens, ntoks, &curtok, &len);
+            len = 1;
+            curtok = strdup("\"");
+            _add_token(&tokens, ntoks, &curtok, &len);
+            instr = !instr;
+            continue;
+        }
+
+        if (!instr) {
+            if (isspace(code[i])) {
+                _add_token(&tokens, ntoks, &curtok, &len);
+                continue;
+            } else if (code[i] == '(' || code[i] == ')') {
+                _add_token(&tokens, ntoks, &curtok, &len);
+                len = 1;
+                curtok = malloc(2);
+                curtok[0] = code[i];
+                curtok[1] = '\0';
+                _add_token(&tokens, ntoks, &curtok, &len);
+                continue;
+            } 
+        }
+
+        len++;
+        curtok = realloc(curtok, len);
+        curtok[len-1] = code[i];
+    }
+
+    _add_token(&tokens, ntoks, &curtok, &len);
+
+    return tokens;
 }
 
 int main() {
@@ -116,5 +175,13 @@ int main() {
     list_prepend(object, new_int(3));
     list_prepend(object, new_string("test"));
     object_print(object);
+
+    int ntoks;
+    char **toks = tokenize("(print 1.2 \"test\"  (1 2 3))", &ntoks);
+    printf("Tokens: %d\n", ntoks);
+    for (int i = 0; i < ntoks; i++) {
+        printf("%s\n", toks[i]);
+    }
+
     return 0;
 }
