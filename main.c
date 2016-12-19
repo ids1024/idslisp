@@ -10,6 +10,7 @@
 #include "eval.h"
 #include "util.h"
 #include "dictionary.h"
+#include "builtins.h"
 
 char *read_to_string(FILE *file) {
     // FIXME: performance
