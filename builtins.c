@@ -56,3 +56,10 @@ Object *builtin_times(ListNode *args) {
 Object *builtin_divide(ListNode *args) {
     return _OPERATOR_BUILTIN(/=, args);
 }
+
+void builtins_load(Dictionary *dictionary) {
+    dictionary_insert(dictionary, "+", new_builtin(builtin_add));
+    dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
+    dictionary_insert(dictionary, "*", new_builtin(builtin_times));
+    dictionary_insert(dictionary, "/", new_builtin(builtin_divide));
+}

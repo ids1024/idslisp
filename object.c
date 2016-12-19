@@ -41,6 +41,11 @@ Object *new_list(ListNode *value) {
     return _NEW_OBJECT(LIST, list, value);
 }
 
+Object *new_builtin(BuiltinFunc value) {
+    return _NEW_OBJECT(BUILTIN, builtin, value);
+}
+
+
 void list_prepend(Object *object, Object *value) {
     assert(object->type == LIST);
     object->u.list = new_node(object->u.list, value);
@@ -89,6 +94,9 @@ void object_print(Object *object) {
                 }
             }
             printf(")");
+            break;
+        case BUILTIN:
+            printf("<built-in function>");
             break;
     }
 }

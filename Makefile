@@ -1,15 +1,15 @@
 all: lisp
 
-lisp: main.o eval.c builtins.o parse.o tokenize.o object.o util.o
+lisp: main.o eval.c builtins.o parse.o tokenize.o object.o util.o dictionary.o
 	gcc -g -lreadline -o $@ $^
 
-main.o: main.c parse.h object.h tokenize.h
+main.o: main.c parse.h object.h tokenize.h eval.h util.h
 	gcc -g -c -o $@ $<
 
 eval.o: eval.c eval.h builtins.h object.h
 	gcc -g -c -o $@ $<
 
-builtins.o: builtins.c builtins.h object.h
+builtins.o: builtins.c builtins.h object.h dictionary.h
 	gcc -g -c -o $@ $<
 
 parse.o: parse.c parse.h object.h tokenize.h
@@ -22,6 +22,9 @@ object.o: object.c object.h
 	gcc -g -c -o $@ $<
 
 util.o: util.c util.h
+	gcc -g -c -o $@ $<
+
+dictionary.o: dictionary.c dictionary.h object.h
 	gcc -g -c -o $@ $<
 
 clean:

@@ -9,6 +9,7 @@
 #include "parse.h"
 #include "eval.h"
 #include "util.h"
+#include "dictionary.h"
 
 char *read_to_string(FILE *file) {
     // FIXME: performance
@@ -31,6 +32,10 @@ int main(int argc, char *argv[]) {
     Object **objects, *result;
     FILE *file;
     char *text;
+    Dictionary *dictionary;
+
+    dictionary = dictionary_new();
+    builtins_load(dictionary);
 
     if (argc == 1) {
         repl = true;
@@ -40,7 +45,7 @@ int main(int argc, char *argv[]) {
             objects = parse(text, &nobjects);
             for (i = 0; i < nobjects; i++) {
                 assert(objects[i]->type == LIST);
-                result = eval(objects[i]->u.list);
+                result = eval(dictionary, objects[i]->u.list);
                 object_print(result);
                 // FIXME free on longjmp as well
                 object_free(objects[i]);
@@ -59,7 +64,7 @@ int main(int argc, char *argv[]) {
         objects = parse(text, &nobjects);
         for (i = 0; i < nobjects; i++) {
             assert(objects[i]->type == LIST);
-            object_print(eval(objects[i]->u.list));
+            object_print(eval(dictionary, objects[i]->u.list));
             printf("\n");
         }
     } else {

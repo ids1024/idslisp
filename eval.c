@@ -2,15 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "eval.h"
 #include "object.h"
 #include "builtins.h"
 #include "util.h"
 
 
-Object *eval(ListNode *list) {
+Object *eval(Dictionary *dictionary, ListNode *list) {
     char *command;
     ListNode *args;
-    Object *old_val;
+    Object *old_val, *function;
 
     if (list == NULL)
         error_message("Cannot evaluate empty list.");
@@ -26,21 +27,17 @@ Object *eval(ListNode *list) {
         if (node->value->type == LIST) {
             // Replace list with what it evluates to
             old_val = node->value;
-            node->value = eval(node->value->u.list);
+            node->value = eval(dictionary, node->value->u.list);
             object_free(old_val);
         }
     }
 
     // Execute command
-    if (strcmp(command, "+") == 0) {
-        return builtin_add(args);
-    } else if (strcmp(command, "-") == 0) {
-        return builtin_minus(args);
-    } else if (strcmp(command, "*") == 0) {
-        return builtin_times(args);
-    } else if (strcmp(command, "/") == 0) {
-        return builtin_divide(args);
-    } else {
-        error_message("Error: '%s' undefined.\n", command);
-    }
+    function = dictionary_get(dictionary, command);
+    if (function == NULL)
+        error_message("Error: '%s' undefined.", command);
+    else if (function->type == BUILTIN)
+        function->u.builtin(args);
+    else
+        error_message("Error: '%s' not a function.", command);
 }
