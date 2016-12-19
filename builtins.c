@@ -114,12 +114,10 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
         error_message("First argument to 'def' must be symbol.");
 
     name = args->value->u.s;
-    value = args->next->value;
-    if (value->type == LIST)
-        value = eval(dictionary, value->u.list);
+    value = eval_arg(dictionary, args->next->value);
 
     dictionary_insert(dictionary, name, value);
-    return new_nil();
+    return new_symbol(name);
 }
 
 Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
