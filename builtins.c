@@ -115,6 +115,13 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
     return new_nil();
 }
 
+Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
+    if (args == NULL || args->next != NULL)
+        error_message("Wrong number of arguments to 'quote'.");
+
+    return args->value;
+}
+
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "+", new_builtin(builtin_add));
     dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
@@ -125,4 +132,5 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
     dictionary_insert(dictionary, "def", new_special(builtin_def));
+    dictionary_insert(dictionary, "quote", new_special(builtin_quote));
 }
