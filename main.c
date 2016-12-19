@@ -41,8 +41,7 @@ int main(int argc, char *argv[]) {
     if (argc == 1) {
         repl = true;
         setjmp(repl_jmp_buf);
-        for (;;) {
-            text = readline("> ");
+        while ((text = readline("> ")) != NULL) {
             objects = parse(text, &nobjects);
             for (i = 0; i < nobjects; i++) {
                 assert(objects[i]->type == LIST);
@@ -55,6 +54,7 @@ int main(int argc, char *argv[]) {
             }
             free(objects);
         }
+	printf("\n");
     } else if (argc == 2) {
         file = fopen(argv[1], "r");
         if (file == NULL)
