@@ -33,6 +33,6 @@ Object *new_list(ListNode *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_nil(void);
 void list_prepend(Object *object, Object *value);
-Object *object_free(Object *object);
+void object_free(Object *object);
 void object_print(Object *object);
 #endif

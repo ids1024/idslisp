@@ -56,7 +56,7 @@ void list_prepend(Object *object, Object *value) {
     object->u.list = new_node(object->u.list, value);
 }
 
-Object *object_free(Object *object) {
+void object_free(Object *object) {
     switch (object->type) {
         case LIST:
             for (ListNode *node=object->u.list; node!=NULL; node=node->next) {
