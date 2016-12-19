@@ -28,7 +28,7 @@ Object *eval(Dictionary *dictionary, ListNode *list) {
             // Replace list with what it evluates to
             old_val = node->value;
             node->value = eval(dictionary, node->value->u.list);
-            object_free(old_val);
+            //object_free(old_val) XXX;
         } else if (node->value->type == SYMBOL) {
             old_val = node->value;
             node->value = dictionary_get(dictionary, old_val->u.s);

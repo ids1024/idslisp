@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
                 result = eval(dictionary, objects[i]->u.list);
                 object_print(result);
                 // FIXME free on longjmp as well
-                object_free(objects[i]);
+                // object_free(objects[i]); // XXX
                 object_free(result);
                 printf("\n");
             }

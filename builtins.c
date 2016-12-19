@@ -80,6 +80,10 @@ Object *builtin_println(ListNode *args) {
     return value;
 }
 
+Object *builtin_list(ListNode *args) {
+    return new_list(args);
+}
+
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "+", new_builtin(builtin_add));
     dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
@@ -87,4 +91,5 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "/", new_builtin(builtin_divide));
     dictionary_insert(dictionary, "print", new_builtin(builtin_print));
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
+    dictionary_insert(dictionary, "list", new_builtin(builtin_list));
 }
