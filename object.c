@@ -45,6 +45,10 @@ Object *new_builtin(BuiltinFunc value) {
     return _NEW_OBJECT(BUILTIN, builtin, value);
 }
 
+Object *new_special(BuiltinFunc value) {
+    return _NEW_OBJECT(SPECIAL, builtin, value);
+}
+
 Object *new_nil(void) {
     Object *object = malloc(sizeof(Object));
     object->type = NIL;
@@ -102,6 +106,9 @@ void object_print(Object *object) {
             break;
         case BUILTIN:
             printf("<built-in function>");
+            break;
+        case SPECIAL:
+            printf("<built-in special form>");
             break;
         case NIL:
             printf("nil");

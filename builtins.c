@@ -4,6 +4,8 @@
 
 #include "builtins.h"
 #include "util.h"
+#include "eval.h"
+#include "dictionary.h"
 
 
 #define _OPERATOR_BUILTIN(operator, args) ({ \
@@ -41,23 +43,23 @@
     object; \
 })
 
-Object *builtin_add(ListNode *args) {
+Object *builtin_add(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(+=, args);
 }
 
-Object *builtin_minus(ListNode *args) {
+Object *builtin_minus(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(-=, args);
 }
 
-Object *builtin_times(ListNode *args) {
+Object *builtin_times(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(*=, args);
 }
 
-Object *builtin_divide(ListNode *args) {
+Object *builtin_divide(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(/=, args);
 }
 
-Object *builtin_print(ListNode *args) {
+Object *builtin_print(Dictionary *dictionary, ListNode *args) {
     ListNode *arg;
 
     arg = args;
@@ -74,25 +76,43 @@ Object *builtin_print(ListNode *args) {
     return new_nil();
 }
 
-Object *builtin_println(ListNode *args) {
-    Object *value = builtin_print(args);
+Object *builtin_println(Dictionary *dictionary, ListNode *args) {
+    Object *value = builtin_print(dictionary, args);
     printf("\n");
     return value;
 }
 
-Object *builtin_list(ListNode *args) {
+Object *builtin_list(Dictionary *dictionary, ListNode *args) {
     return new_list(args);
 }
 
-Object *builtin_first(ListNode *args) {
+Object *builtin_first(Dictionary *dictionary, ListNode *args) {
     if (args == NULL)
-        error_message("Wrong number of arguments 'first'.");
+        error_message("Wrong number of arguments to 'first'.");
     else if (args->value->type != LIST)
         error_message("Argument to 'first' must be list.");
     else if (args->value->u.list == NULL)
         return new_nil();
     else
         return args->value->u.list->value;
+}
+
+Object *builtin_def(Dictionary *dictionary, ListNode *args) {
+    char *name;
+    Object *value;
+
+    if (args == NULL || args->next == NULL || args->next->next != NULL)
+        error_message("Wrong number of arguments to 'def'.");
+    else if (args->value->type != SYMBOL)
+        error_message("First argument to 'def' must be symbol.");
+
+    name = args->value->u.s;
+    value = args->next->value;
+    if (value->type == LIST)
+        value = eval(dictionary, value->u.list);
+
+    dictionary_insert(dictionary, name, value);
+    return new_nil();
 }
 
 void builtins_load(Dictionary *dictionary) {
@@ -104,4 +124,5 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
+    dictionary_insert(dictionary, "def", new_special(builtin_def));
 }
