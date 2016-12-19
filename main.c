@@ -27,8 +27,8 @@ char *read_to_string(FILE *file) {
 }
 
 int main(int argc, char *argv[]) {
-    int nobjects;
-    Object **objects;
+    int nobjects, i;
+    Object **objects, *result;
     FILE *file;
     char *text;
 
@@ -38,11 +38,13 @@ int main(int argc, char *argv[]) {
         for (;;) {
             text = readline("> ");
             objects = parse(text, &nobjects);
-            for (int i = 0; i < nobjects; i++) {
+            for (i = 0; i < nobjects; i++) {
                 assert(objects[i]->type == LIST);
-                object_print(eval(objects[i]->u.list));
+                result = eval(objects[i]->u.list);
+                object_print(result);
                 // FIXME free on longjmp as well
                 object_free(objects[i]);
+                object_free(result);
                 printf("\n");
             }
             free(objects);
@@ -55,7 +57,7 @@ int main(int argc, char *argv[]) {
         text = read_to_string(file);
 
         objects = parse(text, &nobjects);
-        for (int i = 0; i < nobjects; i++) {
+        for (i = 0; i < nobjects; i++) {
             assert(objects[i]->type == LIST);
             object_print(eval(objects[i]->u.list));
             printf("\n");
