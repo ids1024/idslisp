@@ -4,6 +4,9 @@
 
 #include "util.h"
 
+bool repl = false;
+jmp_buf repl_jmp_buf;
+
 void error_message(char *format, ...) {
     va_list args;
 
@@ -15,5 +18,8 @@ void error_message(char *format, ...) {
 
     fprintf(stderr, "\n");
     
-    exit(1);
+    if (repl)
+        longjmp(repl_jmp_buf, 1);
+    else
+        exit(1);
 }

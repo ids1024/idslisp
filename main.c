@@ -33,6 +33,8 @@ int main(int argc, char *argv[]) {
     char *text;
 
     if (argc == 1) {
+        repl = true;
+        setjmp(repl_jmp_buf);
         for (;;) {
             text = readline("> ");
             objects = parse(text, &nobjects);
