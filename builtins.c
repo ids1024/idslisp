@@ -43,6 +43,13 @@
     object; \
 })
 
+int _count_args(ListNode *args) {
+    int count = 0;
+    ListNode *arg;
+    for (arg=args; arg!=NULL; arg=arg->next) count++;
+    return count;
+}
+
 Object *builtin_add(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(+=, args);
 }
@@ -87,7 +94,7 @@ Object *builtin_list(Dictionary *dictionary, ListNode *args) {
 }
 
 Object *builtin_first(Dictionary *dictionary, ListNode *args) {
-    if (args == NULL)
+    if (_count_args(args) != 1)
         error_message("Wrong number of arguments to 'first'.");
     else if (args->value->type != LIST)
         error_message("Argument to 'first' must be list.");
@@ -101,7 +108,7 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
     char *name;
     Object *value;
 
-    if (args == NULL || args->next == NULL || args->next->next != NULL)
+    if (_count_args(args) != 2)
         error_message("Wrong number of arguments to 'def'.");
     else if (args->value->type != SYMBOL)
         error_message("First argument to 'def' must be symbol.");
@@ -116,7 +123,7 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
 }
 
 Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
-    if (args == NULL || args->next != NULL)
+    if (_count_args(args) != 1)
         error_message("Wrong number of arguments to 'quote'.");
 
     return args->value;
