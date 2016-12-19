@@ -41,8 +41,11 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < nobjects; i++) {
                 assert(objects[i]->type == LIST);
                 object_print(eval(objects[i]->u.list));
+                // FIXME free on longjmp as well
+                object_free(objects[i]);
                 printf("\n");
             }
+            free(objects);
         }
     } else if (argc == 2) {
         file = fopen(argv[1], "r");
