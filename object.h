@@ -17,11 +17,13 @@ typedef struct Object_ {
         struct ListNode_ *list;
         BuiltinFunc builtin;
     } u;
+    int refcount;
 } Object;
 
 typedef struct ListNode_ {
     struct Object_ *value;
     struct ListNode_ *next;
+    int refcount;
 } ListNode;
 
 
@@ -35,7 +37,8 @@ Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);
 Object *new_nil(void);
 void list_prepend(Object *object, Object *value);
-void object_free(Object *object);
+void garbage_collect(Object *object);
+void garbage_collect_list(ListNode *list);
 void object_print(Object *object);
 
 #endif

@@ -10,6 +10,7 @@
         Object *object = malloc(sizeof(Object)); \
         object->type = typename; \
         object->u.utype = value; \
+        object->refcount = 1; \
         object; \
     })
 
@@ -18,6 +19,7 @@ ListNode *new_node(ListNode *next, Object *value) {
     ListNode *node = malloc(sizeof(ListNode));
     node->value = value;
     node->next = next;
+    node->refcount = 1;
     return node;
 }
 
@@ -52,6 +54,7 @@ Object *new_special(BuiltinFunc value) {
 Object *new_nil(void) {
     Object *object = malloc(sizeof(Object));
     object->type = NIL;
+    object->refcount = 1;
     return object;
 }
 
@@ -60,20 +63,38 @@ void list_prepend(Object *object, Object *value) {
     object->u.list = new_node(object->u.list, value);
 }
 
-void object_free(Object *object) {
-    switch (object->type) {
-        case LIST:
-            for (ListNode *node=object->u.list; node!=NULL; node=node->next) {
-                object_free(node->value);
-                free(node);
-            }
-            break;
-        case STRING:
-        case SYMBOL:
-            free(object->u.s);
-            break;
+void garbage_collect(Object *object) {
+    object->refcount--;
+    assert(object->refcount >= 0);
+    if (object->refcount == 0) {
+        switch (object->type) {
+            case LIST:
+                garbage_collect_list(object->u.list);
+                break;
+            case STRING:
+            case SYMBOL:
+                free(object->u.s);
+                break;
+        }
+        free(object);
     }
-    free(object);
+}
+
+void garbage_collect_list(ListNode *list) {
+    ListNode *old_node, *node;
+
+    node = list;
+    while (node != NULL) {
+        node->refcount--;
+        assert(node->refcount >= 0);
+        if (node->refcount != 0)
+            break;
+
+        garbage_collect(node->value);
+        old_node = node;
+        node=node->next;
+        free(old_node);
+    }
 }
 
 void object_print(Object *object) {

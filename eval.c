@@ -13,11 +13,13 @@ Object *eval_arg(Dictionary *dictionary, Object *arg) {
     if (arg->type == LIST) {
         // Replace list with what it evluates to
         value = eval(dictionary, arg->u.list);
-        //object_free(arg) XXX;
+        garbage_collect(arg);
     } else if (arg->type == SYMBOL) {
         value = dictionary_get(dictionary, arg->u.s);
         if (value == NULL)
             error_message("'%s' undefined.", arg->u.s);
+        value->refcount++;
+        garbage_collect(arg);
     } else {
         value = arg;
     }

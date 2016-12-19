@@ -100,8 +100,10 @@ Object *builtin_first(Dictionary *dictionary, ListNode *args) {
         error_message("Argument to 'first' must be list.");
     else if (args->value->u.list == NULL)
         return new_nil();
-    else
+    else {
+        args->value->u.list->value->refcount++;
         return args->value->u.list->value;
+    }
 }
 
 Object *builtin_def(Dictionary *dictionary, ListNode *args) {
@@ -115,6 +117,7 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
 
     name = args->value->u.s;
     value = eval_arg(dictionary, args->next->value);
+    value->refcount++;
 
     dictionary_insert(dictionary, name, value);
     return new_symbol(name);
@@ -124,6 +127,7 @@ Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
     if (_count_args(args) != 1)
         error_message("Wrong number of arguments to 'quote'.");
 
+    args->value->refcount++;
     return args->value;
 }
 

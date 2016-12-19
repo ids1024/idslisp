@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "dictionary.h"
+#include "eval.h"
 
 Dictionary *dictionary_new(void) {
     Dictionary *dictionary = malloc(sizeof(Dictionary));
@@ -34,7 +35,7 @@ void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
 
     entry = _dictionary_get(dictionary, key);
     if (entry != NULL) {
-        // FIXME free memory? (TODO: implement garbage collector)
+        garbage_collect(entry->value);
         entry->value = value;
     } else {
         entry = malloc(sizeof(Dictionary));
