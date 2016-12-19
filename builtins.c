@@ -84,6 +84,17 @@ Object *builtin_list(ListNode *args) {
     return new_list(args);
 }
 
+Object *builtin_first(ListNode *args) {
+    if (args == NULL)
+        error_message("Wrong number of arguments 'first'.");
+    else if (args->value->type != LIST)
+        error_message("Argument to 'first' must be list.");
+    else if (args->value->u.list == NULL)
+        return new_nil();
+    else
+        return args->value->u.list->value;
+}
+
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "+", new_builtin(builtin_add));
     dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
@@ -92,4 +103,5 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "print", new_builtin(builtin_print));
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
+    dictionary_insert(dictionary, "first", new_builtin(builtin_first));
 }
