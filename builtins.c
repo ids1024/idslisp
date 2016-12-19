@@ -57,9 +57,34 @@ Object *builtin_divide(ListNode *args) {
     return _OPERATOR_BUILTIN(/=, args);
 }
 
+Object *builtin_print(ListNode *args) {
+    ListNode *arg;
+
+    arg = args;
+    while (arg!=NULL) {
+        if (arg->value->type == STRING)
+            printf("%s", arg->value->u.s);
+        else
+            object_print(arg->value);
+
+        arg = arg->next;
+        if (arg != NULL)
+            printf(" ");
+    }
+    return new_nil();
+}
+
+Object *builtin_println(ListNode *args) {
+    Object *value = builtin_print(args);
+    printf("\n");
+    return value;
+}
+
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "+", new_builtin(builtin_add));
     dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
     dictionary_insert(dictionary, "*", new_builtin(builtin_times));
     dictionary_insert(dictionary, "/", new_builtin(builtin_divide));
+    dictionary_insert(dictionary, "print", new_builtin(builtin_print));
+    dictionary_insert(dictionary, "println", new_builtin(builtin_println));
 }

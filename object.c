@@ -45,6 +45,11 @@ Object *new_builtin(BuiltinFunc value) {
     return _NEW_OBJECT(BUILTIN, builtin, value);
 }
 
+Object *new_nil(void) {
+    Object *object = malloc(sizeof(Object));
+    object->type = NIL;
+    return object;
+}
 
 void list_prepend(Object *object, Object *value) {
     assert(object->type == LIST);
@@ -97,6 +102,9 @@ void object_print(Object *object) {
             break;
         case BUILTIN:
             printf("<built-in function>");
+            break;
+        case NIL:
+            printf("nil");
             break;
     }
 }
