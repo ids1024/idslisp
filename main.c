@@ -49,13 +49,13 @@ int main(int argc, char *argv[]) {
     FILE *file;
     char *text;
     Dictionary *dictionary;
+    int status = 0;
 
     dictionary = dictionary_new();
     builtins_load(dictionary);
 
     if (argc == 1) {
-        repl = true;
-        setjmp(repl_jmp_buf);
+        setjmp(error_jmp_buf);
         while ((text = readline("> ")) != NULL) {
             parse_and_eval(dictionary, text);
             free(text);
@@ -68,7 +68,10 @@ int main(int argc, char *argv[]) {
         text = read_to_string(file);
         fclose(file);
 
-        parse_and_eval(dictionary, text);
+        if (setjmp(error_jmp_buf) == 0)
+            parse_and_eval(dictionary, text);
+        else
+            status = 1;
         free(text);
     } else {
         error_message("Wrong number of arguments.");
@@ -76,5 +79,5 @@ int main(int argc, char *argv[]) {
 
     dictionary_free(dictionary);
 
-    return 0;
+    return status;
 }

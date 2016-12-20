@@ -3,8 +3,7 @@
 #include <stdbool.h>
 #include <setjmp.h>
 
-extern bool repl;
-extern jmp_buf repl_jmp_buf;
+extern jmp_buf error_jmp_buf;
 
 void error_message(char *format, ...);
 #endif
