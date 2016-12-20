@@ -37,7 +37,6 @@ Object *new_function(ListNode *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);
 Object *new_nil(void);
-void list_prepend(Object *object, Object *value);
 void garbage_collect(Object *object);
 void garbage_collect_list(ListNode *list);
 void object_print(Object *object);

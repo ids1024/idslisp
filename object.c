@@ -62,11 +62,6 @@ Object *new_nil(void) {
     return object;
 }
 
-void list_prepend(Object *object, Object *value) {
-    assert(object->type == LIST);
-    object->u.list = new_node(object->u.list, value);
-}
-
 void garbage_collect(Object *object) {
     object->refcount--;
     assert(object->refcount >= 0);
