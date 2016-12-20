@@ -108,6 +108,12 @@ Object *builtin_less_equal(Dictionary *dictionary, ListNode *args) {
     return _COMPARISON_BUILTIN(<=, args);
 }
 
+Object *builtin_not(Dictionary *dictionary, ListNode *args) {
+    if (list_len(args) != 1)
+        error_message("Wrong number of arguments to 'not'.");
+    return from_bool(!to_bool(args->value));
+}
+
 Object *builtin_print(Dictionary *dictionary, ListNode *args) {
     ListNode *arg;
 
@@ -278,6 +284,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "<", new_builtin(builtin_less));
     dictionary_insert(dictionary, ">=", new_builtin(builtin_greater_equal));
     dictionary_insert(dictionary, "<=", new_builtin(builtin_less_equal));
+    dictionary_insert(dictionary, "not", new_builtin(builtin_not));
     dictionary_insert(dictionary, "print", new_builtin(builtin_print));
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
