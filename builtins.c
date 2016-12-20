@@ -90,6 +90,7 @@ Object *builtin_println(Dictionary *dictionary, ListNode *args) {
 }
 
 Object *builtin_list(Dictionary *dictionary, ListNode *args) {
+    args->refcount++;
     return new_list(args);
 }
 

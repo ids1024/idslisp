@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
         setjmp(repl_jmp_buf);
         while ((text = readline("> ")) != NULL) {
             objects = parse(text, &nobjects);
+            free(text);
             for (i = 0; i < nobjects; i++) {
                 result = eval(dictionary, objects[i]);
                 object_print(result);
@@ -59,8 +60,10 @@ int main(int argc, char *argv[]) {
             error_message("%s", strerror(errno));
 
         text = read_to_string(file);
-
+        fclose(file);
         objects = parse(text, &nobjects);
+        free(text);
+
         for (i = 0; i < nobjects; i++) {
             assert(objects[i]->type == LIST);
             result = eval(dictionary, objects[i]);
@@ -68,6 +71,7 @@ int main(int argc, char *argv[]) {
             garbage_collect(result);
             printf("\n");
         }
+        free(objects);
     } else {
         error_message("Wrong number of arguments.");
     }

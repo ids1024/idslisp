@@ -52,9 +52,12 @@ void dictionary_free(Dictionary *dictionary) {
     
     entry = dictionary->first;
     while(entry != NULL) {
+        free(entry->key);
         garbage_collect(entry->value);
         old_entry = entry;
         entry=entry->next;
         free(old_entry);
     }
+
+    free(dictionary);
 }

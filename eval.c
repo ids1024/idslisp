@@ -30,13 +30,11 @@ Object *eval_arg(Dictionary *dictionary, Object *arg) {
 Object *eval(Dictionary *dictionary, Object *object) {
     char *command;
     ListNode *args;
-    Object *function;
+    Object *function, *value;
     ListNode *list;
 
     assert(object->type == LIST);
     list = object->u.list;
-    object->u.list->refcount++;
-    garbage_collect(object);
 
     if (list == NULL)
         error_message("Cannot evaluate empty list.");
@@ -55,9 +53,12 @@ Object *eval(Dictionary *dictionary, Object *object) {
         for (ListNode *node=args; node!=NULL; node=node->next) {
             node->value = eval_arg(dictionary, node->value);
         }
-        return function->u.builtin(dictionary, args);
+        value = function->u.builtin(dictionary, args);
     } else if (function->type == SPECIAL)
-        return function->u.builtin(dictionary, args);
+        value = function->u.builtin(dictionary, args);
     else
         error_message("'%s' not a function.", command);
+
+    garbage_collect(object);
+    return value;
 }
