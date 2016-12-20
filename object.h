@@ -2,7 +2,7 @@
 #define OBJECT_H
 #include <stdbool.h>
 
-typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, LIST, BUILTIN, NIL, SPECIAL, FUNCTION} Type;
+typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, LIST, BUILTIN, NIL, SPECIAL, FUNCTION, T} Type;
 
 struct ListNode_;
 struct Object_;
@@ -40,10 +40,12 @@ Object *new_function(ListNode *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);
 bool object_iscallable(Object *object);
+bool object_issingleton(Object *object);
 void garbage_collect(Object *object);
 void garbage_collect_list(ListNode *list);
 void object_print(Object *object);
 
 extern Object NIL_CONST;
+extern Object T_CONST;
 
 #endif

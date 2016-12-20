@@ -6,6 +6,7 @@
 #include "object.h"
 
 Object NIL_CONST = {NIL};
+Object T_CONST = {T};
 
 #define _NEW_OBJECT(typename, utype, value) ({ \
         Object *object = malloc(sizeof(Object)); \
@@ -70,11 +71,13 @@ bool object_iscallable(Object *object) {
             object->type == SPECIAL);
 }
 
+bool object_issingleton(Object *object) {
+    return (object->type == NIL || object->type == T);
+}
+
 void garbage_collect(Object *object) {
-    if (object->type == NIL) {
-        assert(object == &NIL_CONST);
+    if (object_issingleton(object))
         return;
-    }
 
     object->refcount--;
     assert(object->refcount >= 0);
@@ -150,6 +153,9 @@ void object_print(Object *object) {
             break;
         case NIL:
             printf("nil");
+            break;
+        case T:
+            printf("T");
             break;
     }
 }
