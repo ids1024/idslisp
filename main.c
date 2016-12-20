@@ -64,15 +64,15 @@ int main(int argc, char *argv[]) {
         }
 	printf("\n");
     } else if (argc == 2) {
-        file = fopen(argv[1], "r");
-        if (file == NULL)
-            error_message("%s", strerror(errno));
-        text = read_to_string(file);
-        fclose(file);
+        if (setjmp(error_jmp_buf) == 0) {
+            file = fopen(argv[1], "r");
+            if (file == NULL)
+                error_message("%s", strerror(errno));
+            text = read_to_string(file);
+            fclose(file);
 
-        if (setjmp(error_jmp_buf) == 0)
             parse_and_eval(dictionary, text, false);
-        else
+        }else
             status = 1;
         free(text);
     } else {
