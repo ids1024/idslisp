@@ -111,6 +111,8 @@ void garbage_collect(Object *object) {
             case SYMBOL:
                 free(object->u.s);
                 break;
+            default:
+                break;
         }
         free(object);
     }
@@ -138,7 +140,7 @@ void object_print(Object *object) {
 
     switch (object->type) {
         case INT:
-            printf("%d", object->u.ld);
+            printf("%ld", object->u.ld);
             break;
         case DOUBLE:
             printf("%lf", object->u.lf);

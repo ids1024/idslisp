@@ -33,7 +33,7 @@ Object *eval_arg(Dictionary *dictionary, Object *arg) {
 
 Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *args) {
     Dictionary *local_dictionary;
-    ListNode *arg_defs, *arg, *node;
+    ListNode *arg, *node;
     Object *value;
 
     assert(function->type == FUNCTION);
@@ -56,7 +56,7 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
 
     // Execute code; last value will be return value
     value = &NIL_CONST;
-    node = node=function->u.list->next;
+    node = function->u.list->next;
     while (node != NULL) {
         garbage_collect(value);
         value = eval_arg(local_dictionary, node->value);
@@ -98,6 +98,8 @@ Object *call_function(Dictionary *dictionary, Object *function, ListNode *args) 
         case SPECIAL:
             value = function->u.builtin(dictionary, args);
             break;
+        default:
+            abort();
     }
 
     return value;

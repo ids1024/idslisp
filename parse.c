@@ -26,7 +26,6 @@ Object *_str_to_num_object(char *text) {
 }
 
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
-    int j;
     Object *item;
     ListNode *list=NULL, *prev_node;
 

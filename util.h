@@ -5,5 +5,5 @@
 
 extern jmp_buf error_jmp_buf;
 
-void error_message(char *format, ...);
+void error_message(char *format, ...) __attribute__ ((noreturn));
 #endif

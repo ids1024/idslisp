@@ -183,7 +183,6 @@ Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
 }
 
 Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
-    Object *function;
     char *name;
 
     if (list_len(args) < 2)
