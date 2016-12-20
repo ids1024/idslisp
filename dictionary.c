@@ -26,14 +26,12 @@ _DictionaryEntry *_dictionary_get(Dictionary *dictionary, char *key) {
     
 Object *dictionary_get(Dictionary *dictionary, char *key) {
     _DictionaryEntry *entry = _dictionary_get(dictionary, key);
-    if (entry == NULL) {
-        if (dictionary->parent != NULL)
-            return dictionary_get(dictionary->parent, key);
-        else
-            return NULL;
-    } else {
+    if (entry != NULL)
         return entry->value;
-    }
+    else if (dictionary->parent != NULL)
+        return dictionary_get(dictionary->parent, key);
+    else
+        return NULL;
 }
 
 void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
