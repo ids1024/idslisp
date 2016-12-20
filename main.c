@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     Dictionary *dictionary;
     int status = 0;
 
-    dictionary = dictionary_new();
+    dictionary = dictionary_new(NULL);
     builtins_load(dictionary);
 
     if (argc == 1) {

@@ -1,6 +1,6 @@
 #ifndef OBJECT_H
 #define OBJECT_H
-typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, LIST, BUILTIN, NIL, SPECIAL} Type;
+typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, LIST, BUILTIN, NIL, SPECIAL, FUNCTION} Type;
 
 struct ListNode_;
 struct Object_;
@@ -33,6 +33,7 @@ Object *new_double(double value);
 Object *new_string(char *value);
 Object *new_symbol(char *value);
 Object *new_list(ListNode *value);
+Object *new_function(ListNode *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);
 Object *new_nil(void);

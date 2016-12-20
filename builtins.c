@@ -140,6 +140,25 @@ Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
     return args->value;
 }
 
+Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
+    Object *function;
+    char *name;
+
+    if (_count_args(args) < 2)
+        error_message("Wrong number of arguments to 'defun'.");
+    else if (args->value->type != SYMBOL)
+        error_message("First argument to 'defun' must be symbol.");
+    else if (args->next->value->type != LIST)
+        error_message("Second argument to 'defun' must be list.");
+
+    // TODO: Verify correctness of formatting
+    
+    args->next->refcount++;
+    name = args->value->u.s;
+    dictionary_insert(dictionary, name, new_function(args->next));
+    return new_symbol(name);
+}
+
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "+", new_builtin(builtin_add));
     dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
@@ -153,4 +172,5 @@ void builtins_load(Dictionary *dictionary) {
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
+    dictionary_insert(dictionary, "defun", new_special(builtin_defun));
 }

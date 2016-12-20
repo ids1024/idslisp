@@ -7,9 +7,10 @@
 #include "eval.h"
 #include "object.h"
 
-Dictionary *dictionary_new(void) {
+Dictionary *dictionary_new(Dictionary *parent) {
     Dictionary *dictionary = malloc(sizeof(Dictionary));
     dictionary->first = NULL;
+    dictionary->parent = parent;
     return dictionary;
 }
 
@@ -25,10 +26,14 @@ _DictionaryEntry *_dictionary_get(Dictionary *dictionary, char *key) {
     
 Object *dictionary_get(Dictionary *dictionary, char *key) {
     _DictionaryEntry *entry = _dictionary_get(dictionary, key);
-    if (entry == NULL)
-        return NULL;
-    else
+    if (entry == NULL) {
+        if (dictionary->parent != NULL)
+            return dictionary_get(dictionary->parent, key);
+        else
+            return NULL;
+    } else {
         return entry->value;
+    }
 }
 
 void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {

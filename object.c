@@ -43,6 +43,10 @@ Object *new_list(ListNode *value) {
     return _NEW_OBJECT(LIST, list, value);
 }
 
+Object *new_function(ListNode *value) {
+    return _NEW_OBJECT(FUNCTION, list, value);
+}
+
 Object *new_builtin(BuiltinFunc value) {
     return _NEW_OBJECT(BUILTIN, builtin, value);
 }
@@ -69,6 +73,7 @@ void garbage_collect(Object *object) {
     if (object->refcount == 0) {
         switch (object->type) {
             case LIST:
+            case FUNCTION:
                 garbage_collect_list(object->u.list);
                 break;
             case STRING:
@@ -130,6 +135,9 @@ void object_print(Object *object) {
             break;
         case SPECIAL:
             printf("<built-in special form>");
+            break;
+        case FUNCTION:
+            printf("<user-defined function>");
             break;
         case NIL:
             printf("nil");

@@ -10,9 +10,10 @@ typedef struct _DictionaryEntry_ {
 
 typedef struct Dictionary_ {
     _DictionaryEntry *first;
+    struct Dictionary_ *parent;
 } Dictionary;
 
-Dictionary *dictionary_new(void);
+Dictionary *dictionary_new(Dictionary *parent);
 Object *dictionary_get(Dictionary *dictionary, char *key);
 void dictionary_insert(Dictionary *dictionary, char *key, Object *value);
 void dictionary_free(Dictionary *dictionary);
