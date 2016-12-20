@@ -107,6 +107,15 @@ Object *builtin_first(Dictionary *dictionary, ListNode *args) {
     }
 }
 
+Object *builtin_eval(Dictionary *dictionary, ListNode *args) {
+    if (_count_args(args) != 1)
+        error_message("Wrong number of arguments to 'eval'.");
+    else if (args->value->type != LIST)
+        error_message("Argument to 'eval' must be list.");
+
+    return eval(dictionary, args->value);
+}
+
 Object *builtin_def(Dictionary *dictionary, ListNode *args) {
     char *name;
     Object *value;
@@ -140,6 +149,8 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
+    dictionary_insert(dictionary, "eval", new_builtin(builtin_eval));
+
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
 }
