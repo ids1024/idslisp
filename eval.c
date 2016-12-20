@@ -58,7 +58,7 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
     node = node=function->u.list->next;
     while (node != NULL) {
         garbage_collect(value);
-        value = eval(local_dictionary, node->value);
+        value = eval_arg(local_dictionary, node->value);
         node = node->next;
     }
 
