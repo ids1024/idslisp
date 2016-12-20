@@ -39,7 +39,7 @@ void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
         garbage_collect(entry->value);
         entry->value = value;
     } else {
-        entry = malloc(sizeof(Dictionary));
+        entry = malloc(sizeof(_DictionaryEntry));
         entry->key = strdup(key);
         entry->value = value;
         entry->next = dictionary->first;
