@@ -28,9 +28,24 @@ char *read_to_string(FILE *file) {
     return text;
 }
 
-int main(int argc, char *argv[]) {
-    int nobjects, i;
+void parse_and_eval(Dictionary *dictionary, char *text) {
     Object **objects, *result;
+    int nobjects, i;
+
+    objects = parse(text, &nobjects);
+    for (i = 0; i < nobjects; i++) {
+        assert(objects[i]->type == LIST);
+        result = eval(dictionary, objects[i]);
+        object_print(result);
+        // FIXME free on longjmp as well
+        garbage_collect(objects[i]);
+        garbage_collect(result);
+        printf("\n");
+    }
+    free(objects);
+}
+
+int main(int argc, char *argv[]) {
     FILE *file;
     char *text;
     Dictionary *dictionary;
@@ -42,39 +57,19 @@ int main(int argc, char *argv[]) {
         repl = true;
         setjmp(repl_jmp_buf);
         while ((text = readline("> ")) != NULL) {
-            objects = parse(text, &nobjects);
+            parse_and_eval(dictionary, text);
             free(text);
-            for (i = 0; i < nobjects; i++) {
-                assert(objects[i]->type == LIST);
-                result = eval(dictionary, objects[i]);
-                object_print(result);
-                // FIXME free on longjmp as well
-                garbage_collect(objects[i]);
-                garbage_collect(result);
-                printf("\n");
-            }
-            free(objects);
         }
 	printf("\n");
     } else if (argc == 2) {
         file = fopen(argv[1], "r");
         if (file == NULL)
             error_message("%s", strerror(errno));
-
         text = read_to_string(file);
         fclose(file);
-        objects = parse(text, &nobjects);
-        free(text);
 
-        for (i = 0; i < nobjects; i++) {
-            assert(objects[i]->type == LIST);
-            result = eval(dictionary, objects[i]);
-            object_print(result);
-            garbage_collect(objects[i]);
-            garbage_collect(result);
-            printf("\n");
-        }
-        free(objects);
+        parse_and_eval(dictionary, text);
+        free(text);
     } else {
         error_message("Wrong number of arguments.");
     }
