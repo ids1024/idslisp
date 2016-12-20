@@ -116,6 +116,32 @@ Object *builtin_eval(Dictionary *dictionary, ListNode *args) {
     return eval(dictionary, args->value);
 }
 
+Object *builtin_map(Dictionary *dictionary, ListNode *args) {
+    Object *function, *value;
+    ListNode *item, *nodes=NULL, *prev_node, *newargs;
+
+    if (_count_args(args) != 2)
+        error_message("Wrong number of arguments to 'map'.");
+    else if (!(object_iscallable(args->value)))
+        error_message("First argument to 'map' must be callable.");
+    else if (args->next->value->type != LIST)
+        error_message("Second argument to 'map' must be list.");
+
+    function = args->value;
+
+    item = args->next->value->u.list;
+    while (item != NULL) {
+        item->value->refcount++;
+        newargs = new_node(NULL, item->value);
+        value = call_function(dictionary, function, newargs); 
+        garbage_collect_list(newargs);
+        append_node(&nodes, &prev_node, value);
+        item = item->next;
+    }
+
+    return new_list(nodes);
+}
+
 Object *builtin_def(Dictionary *dictionary, ListNode *args) {
     char *name;
     Object *value;
@@ -169,6 +195,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
     dictionary_insert(dictionary, "eval", new_builtin(builtin_eval));
+    dictionary_insert(dictionary, "map", new_builtin(builtin_map));
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
