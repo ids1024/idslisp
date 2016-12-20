@@ -28,7 +28,7 @@ Object *_str_to_num_object(char *text) {
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
     int j;
     Object *item;
-    ListNode *list=NULL, *prev_node=NULL, *node;
+    ListNode *list=NULL, *prev_node;
 
     for (; *i<ntoks; (*i)++) {
         if (strcmp(tokens[*i], "\"") == 0) {
@@ -47,12 +47,7 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
         }
 
         // Append to linked list
-        node = new_node(NULL, item);
-        if (list == NULL)
-            list = node;
-        if (prev_node != NULL)
-            prev_node->next = node;
-        prev_node = node;
+        append_node(&list, &prev_node, item);
     }
 
     error_message("missing ')'");

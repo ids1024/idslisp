@@ -23,6 +23,15 @@ ListNode *new_node(ListNode *next, Object *value) {
     return node;
 }
 
+void append_node(ListNode **list, ListNode **prev, Object *value) {
+    ListNode *node = new_node(NULL, value);
+    if (*list == NULL)
+        *list = node;
+    else
+        (*prev)->next = node;
+    *prev = node;
+}
+
 Object *new_int(long int value) {
     return _NEW_OBJECT(INT, ld, value);
 }
