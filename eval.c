@@ -30,9 +30,7 @@ Object *eval_arg(Dictionary *dictionary, Object *arg) {
 
 Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *args) {
     Dictionary *local_dictionary;
-    ListNode *arg_defs;
-    ListNode *arg;
-    ListNode *node;
+    ListNode *arg_defs, *arg, *node;
     Object *value;
 
     assert(function->type == FUNCTION);
