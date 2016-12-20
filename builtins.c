@@ -43,6 +43,35 @@
     object; \
 })
 
+#define _COMPARISON_BUILTIN(operator, args) ({ \
+    double value, newvalue; \
+    bool result=true; \
+    ListNode *node; \
+    \
+    \
+    if (list_len(args) < 1) \
+        error_message("Wrong number of arguments."); \
+    \
+    for (node=args; node!=NULL && result; node=node->next) { \
+        switch (node->value->type) { \
+            case INT: \
+                newvalue = node->value->u.ld; \
+                break; \
+            case DOUBLE: \
+                newvalue = node->value->u.lf; \
+                break; \
+            default: \
+                error_message("Invalid argument"); \
+        } \
+        if (node == args) \
+            value = newvalue; \
+        else if (!(value operator newvalue)) \
+            result = false; \
+    } \
+    \
+    from_bool(result); \
+})
+
 Object *builtin_add(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(+=, args);
 }
@@ -57,6 +86,26 @@ Object *builtin_times(Dictionary *dictionary, ListNode *args) {
 
 Object *builtin_divide(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(/=, args);
+}
+
+Object *builtin_equal(Dictionary *dictionary, ListNode *args) {
+    return _COMPARISON_BUILTIN(==, args);
+}
+
+Object *builtin_greater(Dictionary *dictionary, ListNode *args) {
+    return _COMPARISON_BUILTIN(>, args);
+}
+
+Object *builtin_less(Dictionary *dictionary, ListNode *args) {
+    return _COMPARISON_BUILTIN(<, args);
+}
+
+Object *builtin_greater_equal(Dictionary *dictionary, ListNode *args) {
+    return _COMPARISON_BUILTIN(>=, args);
+}
+
+Object *builtin_less_equal(Dictionary *dictionary, ListNode *args) {
+    return _COMPARISON_BUILTIN(<=, args);
 }
 
 Object *builtin_print(Dictionary *dictionary, ListNode *args) {
@@ -224,6 +273,11 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
     dictionary_insert(dictionary, "*", new_builtin(builtin_times));
     dictionary_insert(dictionary, "/", new_builtin(builtin_divide));
+    dictionary_insert(dictionary, "=", new_builtin(builtin_equal));
+    dictionary_insert(dictionary, ">", new_builtin(builtin_greater));
+    dictionary_insert(dictionary, "<", new_builtin(builtin_less));
+    dictionary_insert(dictionary, ">=", new_builtin(builtin_greater_equal));
+    dictionary_insert(dictionary, "<=", new_builtin(builtin_less_equal));
     dictionary_insert(dictionary, "print", new_builtin(builtin_print));
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));

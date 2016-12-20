@@ -85,6 +85,17 @@ Object *new_special(BuiltinFunc value) {
     return _NEW_OBJECT(SPECIAL, builtin, value);
 }
 
+Object *from_bool(bool value) {
+    if (value)
+        return &T_CONST;
+    else
+        return &NIL_CONST;
+}
+
+bool to_bool(Object *value) {
+    return (value != &NIL_CONST);
+}
+
 bool object_iscallable(Object *object) {
     return (object->type == BUILTIN || object->type == FUNCTION || \
             object->type == SPECIAL);

@@ -41,6 +41,8 @@ Object *new_list(ListNode *value);
 Object *new_function(ListNode *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);
+Object *from_bool(bool value);
+bool to_bool(Object *value);
 bool object_iscallable(Object *object) __attribute__ ((pure));
 bool object_issingleton(Object *object) __attribute__ ((pure));
 void garbage_collect(Object *object);
