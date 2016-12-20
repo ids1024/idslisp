@@ -12,17 +12,20 @@
 Object *eval_arg(Dictionary *dictionary, Object *arg) {
     Object *value;
 
-    if (arg->type == LIST) {
-        // Replace list with what it evluates to
-        value = eval(dictionary, arg);
-    } else if (arg->type == SYMBOL) {
-        value = dictionary_get(dictionary, arg->u.s);
-        if (value == NULL)
-            error_message("'%s' undefined.", arg->u.s);
-        value->refcount++;
-    } else {
-        value = arg;
-        value->refcount++;
+    switch (arg->type) {
+        case LIST:
+            // Replace list with what it evluates to
+            value = eval(dictionary, arg);
+            break;
+        case SYMBOL:
+            value = dictionary_get(dictionary, arg->u.s);
+            if (value == NULL)
+                error_message("'%s' undefined.", arg->u.s);
+            value->refcount++;
+            break;
+        default:
+            value = arg;
+            value->refcount++;
     }
 
     return value;
