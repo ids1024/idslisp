@@ -5,6 +5,7 @@
 
 #include "dictionary.h"
 #include "eval.h"
+#include "object.h"
 
 Dictionary *dictionary_new(void) {
     Dictionary *dictionary = malloc(sizeof(Dictionary));
@@ -43,5 +44,17 @@ void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
         entry->value = value;
         entry->next = dictionary->first;
         dictionary->first = entry;
+    }
+}
+
+void dictionary_free(Dictionary *dictionary) {
+    _DictionaryEntry *entry, *old_entry;
+    
+    entry = dictionary->first;
+    while(entry != NULL) {
+        garbage_collect(entry->value);
+        old_entry = entry;
+        entry=entry->next;
+        free(old_entry);
     }
 }

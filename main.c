@@ -72,5 +72,7 @@ int main(int argc, char *argv[]) {
         error_message("Wrong number of arguments.");
     }
 
+    dictionary_free(dictionary);
+
     return 0;
 }

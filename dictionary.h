@@ -15,4 +15,5 @@ typedef struct Dictionary_ {
 Dictionary *dictionary_new(void);
 Object *dictionary_get(Dictionary *dictionary, char *key);
 void dictionary_insert(Dictionary *dictionary, char *key, Object *value);
+void dictionary_free(Dictionary *dictionary);
 #endif
