@@ -28,6 +28,18 @@ char *read_to_string(FILE *file) {
     return text;
 }
 
+char *read_file(char *filename) {
+    char *text;
+    FILE *file;
+    
+    file = fopen(filename, "r");
+    if (file == NULL)
+        error_message("%s", strerror(errno));
+    text = read_to_string(file);
+    fclose(file);
+    return text;
+}
+
 void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
     Object **objects, *result;
     int nobjects, i;
@@ -48,7 +60,6 @@ void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
 }
 
 int main(int argc, char *argv[]) {
-    FILE *file;
     char *text;
     Dictionary *dictionary;
     int status = 0;
@@ -65,16 +76,11 @@ int main(int argc, char *argv[]) {
 	printf("\n");
     } else if (argc == 2) {
         if (setjmp(error_jmp_buf) == 0) {
-            file = fopen(argv[1], "r");
-            if (file == NULL)
-                error_message("%s", strerror(errno));
-            text = read_to_string(file);
-            fclose(file);
-
+            text = read_file(argv[1]);
             parse_and_eval(dictionary, text, false);
-        }else
+            free(text);
+        } else
             status = 1;
-        free(text);
     } else {
         error_message("Wrong number of arguments.");
     }
