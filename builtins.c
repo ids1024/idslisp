@@ -135,6 +135,29 @@ Object *builtin_map(Dictionary *dictionary, ListNode *args) {
     return new_list(nodes);
 }
 
+Object *builtin_nth(Dictionary *dictionary, ListNode *args) {
+    Object *value;
+    ListNode *list;
+    int index;
+
+    if (list_len(args) != 2)
+        error_message("Wrong number of arguments to 'nth'.");
+    else if (args->value->type != INT)
+        error_message("First argument to 'nth' must be integer.");
+    else if (list_nth(args, 1)->type != LIST)
+        error_message("Second argument to 'nth' must be list.");
+
+    index = args->value->u.ld;
+    list = list_nth(args, 1)->u.list;
+    value = list_nth(list, index);
+    if (value == NULL) {
+        return &NIL_CONST;
+    } else {
+        value->refcount++;
+        return value;
+    }
+}
+
 Object *builtin_def(Dictionary *dictionary, ListNode *args) {
     char *name;
     Object *value;
@@ -208,6 +231,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
     dictionary_insert(dictionary, "eval", new_builtin(builtin_eval));
     dictionary_insert(dictionary, "map", new_builtin(builtin_map));
+    dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
