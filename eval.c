@@ -111,8 +111,7 @@ Object *eval(Dictionary *dictionary, Object *object) {
 
     if (function == NULL)
         error_message("'%s' undefined.", command);
-    else if (function->type != BUILTIN && function->type != FUNCTION && \
-             function->type != SPECIAL)
+    else if (!object_iscallable(function))
         error_message("'%s' not a function.", command);
 
     return call_function(dictionary, function, args);

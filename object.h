@@ -1,5 +1,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
+#include <stdbool.h>
+
 typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, LIST, BUILTIN, NIL, SPECIAL, FUNCTION} Type;
 
 struct ListNode_;
@@ -37,6 +39,7 @@ Object *new_function(ListNode *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);
 Object *new_nil(void);
+bool object_iscallable(Object *object);
 void garbage_collect(Object *object);
 void garbage_collect_list(ListNode *list);
 void object_print(Object *object);

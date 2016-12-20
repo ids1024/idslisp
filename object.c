@@ -62,6 +62,11 @@ Object *new_nil(void) {
     return object;
 }
 
+bool object_iscallable(Object *object) {
+    return (object->type == BUILTIN || object->type == FUNCTION || \
+            object->type == SPECIAL);
+}
+
 void garbage_collect(Object *object) {
     object->refcount--;
     assert(object->refcount >= 0);
