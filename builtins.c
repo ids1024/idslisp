@@ -117,12 +117,12 @@ Object *builtin_map(Dictionary *dictionary, ListNode *args) {
         error_message("Wrong number of arguments to 'map'.");
     else if (!(object_iscallable(args->value)))
         error_message("First argument to 'map' must be callable.");
-    else if (args->next->value->type != LIST)
+    else if (list_nth(args, 1)->type != LIST)
         error_message("Second argument to 'map' must be list.");
 
     function = args->value;
 
-    item = args->next->value->u.list;
+    item = list_nth(args, 1)->u.list;
     while (item != NULL) {
         item->value->refcount++;
         newargs = new_node(NULL, item->value);
@@ -145,7 +145,7 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
         error_message("First argument to 'def' must be symbol.");
 
     name = args->value->u.s;
-    value = eval_arg(dictionary, args->next->value);
+    value = eval_arg(dictionary, list_nth(args, 1));
 
     dictionary_insert(dictionary, name, value);
     return new_symbol(name);
@@ -167,7 +167,7 @@ Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
         error_message("Wrong number of arguments to 'defun'.");
     else if (args->value->type != SYMBOL)
         error_message("First argument to 'defun' must be symbol.");
-    else if (args->next->value->type != LIST)
+    else if (list_nth(args, 1)->type != LIST)
         error_message("Second argument to 'defun' must be list.");
 
     // TODO: Verify correctness of formatting
@@ -186,9 +186,9 @@ Object *builtin_if(Dictionary *dictionary, ListNode *args) {
 
     condition = eval_arg(dictionary, args->value);
     if (condition != &NIL_CONST)
-        value = eval_arg(dictionary, args->next->value);
+        value = eval_arg(dictionary, list_nth(args, 1));
     else
-        value = eval_arg(dictionary, args->next->next->value);
+        value = eval_arg(dictionary, list_nth(args, 2));
     garbage_collect(condition);
 
     return value;

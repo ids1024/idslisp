@@ -32,6 +32,7 @@ typedef struct ListNode_ {
 ListNode *new_node(ListNode *next, Object *value);
 void append_node(ListNode **list, ListNode **prev, Object *value);
 int list_len(ListNode *nodes);
+Object *list_nth(ListNode *nodes, int n);
 Object *new_int(long int value);
 Object *new_double(double value);
 Object *new_string(char *value);

@@ -41,6 +41,18 @@ int list_len(ListNode *nodes) {
     return count;
 }
 
+Object *list_nth(ListNode *nodes, int n) {
+    int index = 0;
+    ListNode *node;
+    for (node=nodes; node!=NULL; node=node->next) {
+        if (index == n)
+            return node->value;
+        index++;
+    }
+
+    return NULL;
+}
+
 Object *new_int(long int value) {
     return _NEW_OBJECT(INT, ld, value);
 }
