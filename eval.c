@@ -65,28 +65,40 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
     return value;
 }
 
+ListNode *map_eval(Dictionary *dictionary, ListNode *list) {
+    ListNode *nodes=NULL, *last_node, *node, *oldnode;
+
+    for (oldnode=list; oldnode!=NULL; oldnode=oldnode->next) {
+        node = new_node(NULL, eval_arg(dictionary, oldnode->value));
+        if (nodes == NULL)
+            nodes = node;
+        else
+            last_node->next = node;
+        last_node = node;
+    }
+
+    return nodes;
+}
+
 Object *call_function(Dictionary *dictionary, Object *function, ListNode *args) {
     Object *value;
-    ListNode *tmpnodes=NULL, *last_tmpnode, *tmpnode;
+    ListNode *tmpnodes;
  
-    if (function->type == BUILTIN || function->type == FUNCTION) {
-        // Recursively evaluate arguments
-        for (ListNode *node=args; node!=NULL; node=node->next) {
-            tmpnode = new_node(NULL, eval_arg(dictionary, node->value));
-            if (tmpnodes == NULL)
-                tmpnodes = tmpnode;
-            else
-                last_tmpnode->next = tmpnode;
-            last_tmpnode = tmpnode;
-        }
-        if (function->type == BUILTIN)
+    switch (function->type) {
+        case BUILTIN:
+            tmpnodes = map_eval(dictionary, args);
             value = function->u.builtin(dictionary, tmpnodes);
-        else if (function->type == FUNCTION) {
+            garbage_collect_list(tmpnodes);
+            break;
+        case FUNCTION:
+            tmpnodes = map_eval(dictionary, args);
             value = call_user_function(dictionary, function, tmpnodes);
-        }
-        garbage_collect_list(tmpnodes);
-    } else if (function->type == SPECIAL)
-        value = function->u.builtin(dictionary, args);
+            garbage_collect_list(tmpnodes);
+            break;
+        case SPECIAL:
+            value = function->u.builtin(dictionary, args);
+            break;
+    }
 
     return value;
 }
