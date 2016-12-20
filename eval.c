@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "eval.h"
 #include "object.h"
@@ -12,8 +13,7 @@ Object *eval_arg(Dictionary *dictionary, Object *arg) {
 
     if (arg->type == LIST) {
         // Replace list with what it evluates to
-        value = eval(dictionary, arg->u.list);
-        garbage_collect(arg);
+        value = eval(dictionary, arg);
     } else if (arg->type == SYMBOL) {
         value = dictionary_get(dictionary, arg->u.s);
         if (value == NULL)
@@ -27,10 +27,16 @@ Object *eval_arg(Dictionary *dictionary, Object *arg) {
     return value;
 }
 
-Object *eval(Dictionary *dictionary, ListNode *list) {
+Object *eval(Dictionary *dictionary, Object *object) {
     char *command;
     ListNode *args;
     Object *function;
+    ListNode *list;
+
+    assert(object->type == LIST);
+    list = object->u.list;
+    object->u.list->refcount++;
+    garbage_collect(object);
 
     if (list == NULL)
         error_message("Cannot evaluate empty list.");
@@ -49,9 +55,9 @@ Object *eval(Dictionary *dictionary, ListNode *list) {
         for (ListNode *node=args; node!=NULL; node=node->next) {
             node->value = eval_arg(dictionary, node->value);
         }
-        function->u.builtin(dictionary, args);
+        return function->u.builtin(dictionary, args);
     } else if (function->type == SPECIAL)
-        function->u.builtin(dictionary, args);
+        return function->u.builtin(dictionary, args);
     else
         error_message("'%s' not a function.", command);
 }

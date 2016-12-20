@@ -44,11 +44,9 @@ int main(int argc, char *argv[]) {
         while ((text = readline("> ")) != NULL) {
             objects = parse(text, &nobjects);
             for (i = 0; i < nobjects; i++) {
-                assert(objects[i]->type == LIST);
-                result = eval(dictionary, objects[i]->u.list);
+                result = eval(dictionary, objects[i]);
                 object_print(result);
                 // FIXME free on longjmp as well
-		garbage_collect(objects[i]);
                 garbage_collect(result);
                 printf("\n");
             }
@@ -65,7 +63,9 @@ int main(int argc, char *argv[]) {
         objects = parse(text, &nobjects);
         for (i = 0; i < nobjects; i++) {
             assert(objects[i]->type == LIST);
-            object_print(eval(dictionary, objects[i]->u.list));
+            result = eval(dictionary, objects[i]);
+            object_print(result);
+            garbage_collect(result);
             printf("\n");
         }
     } else {

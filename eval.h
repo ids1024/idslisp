@@ -2,5 +2,5 @@
 #define EVAL_H
 #include "dictionary.h"
 Object *eval_arg(Dictionary *dictionary, Object *arg);
-Object *eval(Dictionary *dictionary, ListNode *list);
+Object *eval(Dictionary *dictionary, Object *object);
 #endif
