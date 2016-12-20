@@ -87,8 +87,6 @@ Object *call_function(Dictionary *dictionary, Object *function, ListNode *args) 
         garbage_collect_list(tmpnodes);
     } else if (function->type == SPECIAL)
         value = function->u.builtin(dictionary, args);
-    else
-        error_message("Not a function.");
 
     return value;
 }
@@ -113,6 +111,9 @@ Object *eval(Dictionary *dictionary, Object *object) {
 
     if (function == NULL)
         error_message("'%s' undefined.", command);
+    else if (function->type != BUILTIN && function->type != FUNCTION && \
+             function->type != SPECIAL)
+        error_message("'%s' not a function.", command);
 
     return call_function(dictionary, function, args);
 }
