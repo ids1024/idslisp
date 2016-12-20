@@ -185,6 +185,22 @@ Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
     return new_symbol(name);
 }
 
+Object *builtin_if(Dictionary *dictionary, ListNode *args) {
+    Object *condition, *value;
+
+    if (_count_args(args) != 3)
+        error_message("Wrong number of arguments to 'if'.");
+
+    condition = eval_arg(dictionary, args->value);
+    if (condition != &NIL_CONST)
+        value = eval_arg(dictionary, args->next->value);
+    else
+        value = eval_arg(dictionary, args->next->next->value);
+    garbage_collect(condition);
+
+    return value;
+}
+
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "nil", &NIL_CONST);
     dictionary_insert(dictionary, "T", &T_CONST);
@@ -203,4 +219,5 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
     dictionary_insert(dictionary, "defun", new_special(builtin_defun));
+    dictionary_insert(dictionary, "if", new_special(builtin_if));
 }
