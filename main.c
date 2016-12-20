@@ -28,7 +28,7 @@ char *read_to_string(FILE *file) {
     return text;
 }
 
-void parse_and_eval(Dictionary *dictionary, char *text) {
+void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
     Object **objects, *result;
     int nobjects, i;
 
@@ -36,11 +36,13 @@ void parse_and_eval(Dictionary *dictionary, char *text) {
     for (i = 0; i < nobjects; i++) {
         assert(objects[i]->type == LIST);
         result = eval(dictionary, objects[i]);
-        object_print(result);
+        if (print) {
+            object_print(result);
+            printf("\n");
+        }
         // FIXME free on longjmp as well
         garbage_collect(objects[i]);
         garbage_collect(result);
-        printf("\n");
     }
     free(objects);
 }
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]) {
     if (argc == 1) {
         setjmp(error_jmp_buf);
         while ((text = readline("> ")) != NULL) {
-            parse_and_eval(dictionary, text);
+            parse_and_eval(dictionary, text, true);
             free(text);
         }
 	printf("\n");
@@ -69,7 +71,7 @@ int main(int argc, char *argv[]) {
         fclose(file);
 
         if (setjmp(error_jmp_buf) == 0)
-            parse_and_eval(dictionary, text);
+            parse_and_eval(dictionary, text, false);
         else
             status = 1;
         free(text);
