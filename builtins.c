@@ -118,7 +118,6 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
 
     name = args->value->u.s;
     value = eval_arg(dictionary, args->next->value);
-    value->refcount++;
 
     dictionary_insert(dictionary, name, value);
     return new_symbol(name);
