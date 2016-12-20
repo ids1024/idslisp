@@ -31,8 +31,8 @@ typedef struct ListNode_ {
 
 ListNode *new_node(ListNode *next, Object *value);
 void append_node(ListNode **list, ListNode **prev, Object *value);
-int list_len(ListNode *nodes);
-Object *list_nth(ListNode *nodes, int n);
+int list_len(ListNode *nodes) __attribute__ ((pure));
+Object *list_nth(ListNode *nodes, int n) __attribute__ ((pure));
 Object *new_int(long int value);
 Object *new_double(double value);
 Object *new_string(char *value);
@@ -41,8 +41,8 @@ Object *new_list(ListNode *value);
 Object *new_function(ListNode *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);
-bool object_iscallable(Object *object);
-bool object_issingleton(Object *object);
+bool object_iscallable(Object *object) __attribute__ ((pure));
+bool object_issingleton(Object *object) __attribute__ ((pure));
 void garbage_collect(Object *object);
 void garbage_collect_list(ListNode *list);
 void object_print(Object *object);
