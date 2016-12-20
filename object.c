@@ -72,7 +72,7 @@ bool object_iscallable(Object *object) {
 }
 
 bool object_issingleton(Object *object) {
-    return (object->type == NIL || object->type == T);
+    return (object == &NIL_CONST || object == &T_CONST);
 }
 
 void garbage_collect(Object *object) {
