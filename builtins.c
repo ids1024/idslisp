@@ -80,7 +80,7 @@ Object *builtin_print(Dictionary *dictionary, ListNode *args) {
         if (arg != NULL)
             printf(" ");
     }
-    return new_nil();
+    return &NIL_CONST;
 }
 
 Object *builtin_println(Dictionary *dictionary, ListNode *args) {
@@ -100,7 +100,7 @@ Object *builtin_first(Dictionary *dictionary, ListNode *args) {
     else if (args->value->type != LIST)
         error_message("Argument to 'first' must be list.");
     else if (args->value->u.list == NULL)
-        return new_nil();
+        return &NIL_CONST;
     else {
         args->value->u.list->value->refcount++;
         return args->value->u.list->value;

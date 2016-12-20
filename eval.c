@@ -55,7 +55,7 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
     }
 
     // Execute code; last value will be return value
-    value = new_nil();
+    value = &NIL_CONST;
     node = node=function->u.list->next;
     while (node != NULL) {
         garbage_collect(value);

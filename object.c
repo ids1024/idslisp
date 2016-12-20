@@ -5,6 +5,7 @@
 
 #include "object.h"
 
+Object NIL_CONST = {NIL};
 
 #define _NEW_OBJECT(typename, utype, value) ({ \
         Object *object = malloc(sizeof(Object)); \
@@ -64,21 +65,20 @@ Object *new_special(BuiltinFunc value) {
     return _NEW_OBJECT(SPECIAL, builtin, value);
 }
 
-Object *new_nil(void) {
-    Object *object = malloc(sizeof(Object));
-    object->type = NIL;
-    object->refcount = 1;
-    return object;
-}
-
 bool object_iscallable(Object *object) {
     return (object->type == BUILTIN || object->type == FUNCTION || \
             object->type == SPECIAL);
 }
 
 void garbage_collect(Object *object) {
+    if (object->type == NIL) {
+        assert(object == &NIL_CONST);
+        return;
+    }
+
     object->refcount--;
     assert(object->refcount >= 0);
+
     if (object->refcount == 0) {
         switch (object->type) {
             case LIST:
