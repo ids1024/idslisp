@@ -186,6 +186,8 @@ Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
 }
 
 void builtins_load(Dictionary *dictionary) {
+    dictionary_insert(dictionary, "nil", &NIL_CONST);
+
     dictionary_insert(dictionary, "+", new_builtin(builtin_add));
     dictionary_insert(dictionary, "-", new_builtin(builtin_minus));
     dictionary_insert(dictionary, "*", new_builtin(builtin_times));
