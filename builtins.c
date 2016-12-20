@@ -43,13 +43,6 @@
     object; \
 })
 
-int _count_args(ListNode *args) {
-    int count = 0;
-    ListNode *arg;
-    for (arg=args; arg!=NULL; arg=arg->next) count++;
-    return count;
-}
-
 Object *builtin_add(Dictionary *dictionary, ListNode *args) {
     return _OPERATOR_BUILTIN(+=, args);
 }
@@ -95,7 +88,7 @@ Object *builtin_list(Dictionary *dictionary, ListNode *args) {
 }
 
 Object *builtin_first(Dictionary *dictionary, ListNode *args) {
-    if (_count_args(args) != 1)
+    if (list_len(args) != 1)
         error_message("Wrong number of arguments to 'first'.");
     else if (args->value->type != LIST)
         error_message("Argument to 'first' must be list.");
@@ -108,7 +101,7 @@ Object *builtin_first(Dictionary *dictionary, ListNode *args) {
 }
 
 Object *builtin_eval(Dictionary *dictionary, ListNode *args) {
-    if (_count_args(args) != 1)
+    if (list_len(args) != 1)
         error_message("Wrong number of arguments to 'eval'.");
     else if (args->value->type != LIST)
         error_message("Argument to 'eval' must be list.");
@@ -120,7 +113,7 @@ Object *builtin_map(Dictionary *dictionary, ListNode *args) {
     Object *function, *value;
     ListNode *item, *nodes=NULL, *prev_node, *newargs;
 
-    if (_count_args(args) != 2)
+    if (list_len(args) != 2)
         error_message("Wrong number of arguments to 'map'.");
     else if (!(object_iscallable(args->value)))
         error_message("First argument to 'map' must be callable.");
@@ -146,7 +139,7 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
     char *name;
     Object *value;
 
-    if (_count_args(args) != 2)
+    if (list_len(args) != 2)
         error_message("Wrong number of arguments to 'def'.");
     else if (args->value->type != SYMBOL)
         error_message("First argument to 'def' must be symbol.");
@@ -159,7 +152,7 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
 }
 
 Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
-    if (_count_args(args) != 1)
+    if (list_len(args) != 1)
         error_message("Wrong number of arguments to 'quote'.");
 
     args->value->refcount++;
@@ -170,7 +163,7 @@ Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
     Object *function;
     char *name;
 
-    if (_count_args(args) < 2)
+    if (list_len(args) < 2)
         error_message("Wrong number of arguments to 'defun'.");
     else if (args->value->type != SYMBOL)
         error_message("First argument to 'defun' must be symbol.");
@@ -188,7 +181,7 @@ Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
 Object *builtin_if(Dictionary *dictionary, ListNode *args) {
     Object *condition, *value;
 
-    if (_count_args(args) != 3)
+    if (list_len(args) != 3)
         error_message("Wrong number of arguments to 'if'.");
 
     condition = eval_arg(dictionary, args->value);
