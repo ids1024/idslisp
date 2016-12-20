@@ -67,9 +67,11 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
 
 ListNode *map_eval(Dictionary *dictionary, ListNode *list) {
     ListNode *nodes=NULL, *prev_node, *oldnode;
+    Object *value;
 
     for (oldnode=list; oldnode!=NULL; oldnode=oldnode->next) {
-        append_node(&nodes, &prev_node, eval_arg(dictionary, oldnode->value));
+        value = eval_arg(dictionary, oldnode->value);
+        append_node(&nodes, &prev_node, value);
     }
 
     return nodes;
