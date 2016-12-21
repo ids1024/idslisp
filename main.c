@@ -4,6 +4,7 @@
 #include <errno.h>
 
 #include <readline/readline.h>
+#include <readline/history.h>
 
 #include "object.h"
 #include "parse.h"
@@ -70,6 +71,7 @@ int main(int argc, char *argv[]) {
     if (argc == 1) {
         setjmp(error_jmp_buf);
         while ((text = readline("> ")) != NULL) {
+            add_history(text);
             parse_and_eval(dictionary, text, true);
             free(text);
         }
