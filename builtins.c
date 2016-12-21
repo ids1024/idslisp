@@ -114,6 +114,26 @@ Object *builtin_not(Dictionary *dictionary, ListNode *args) {
     return from_bool(!to_bool(args->value));
 }
 
+Object *builtin_or(Dictionary *dictionary, ListNode *args) {
+    for (ListNode *node=args; node!=NULL; node=node->next) {
+        if (to_bool(node->value)) {
+            node->value->refcount++;
+            return node->value;
+        }
+    }
+    return &NIL_CONST;
+}
+
+Object *builtin_and(Dictionary *dictionary, ListNode *args) {
+    for (ListNode *node=args; node!=NULL; node=node->next) {
+        if (!to_bool(node->value)) {
+            node->value->refcount++;
+            return node->value;
+        }
+    }
+    return &T_CONST;
+}
+
 Object *builtin_print(Dictionary *dictionary, ListNode *args) {
     ListNode *arg;
 
@@ -285,6 +305,8 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, ">=", new_builtin(builtin_greater_equal));
     dictionary_insert(dictionary, "<=", new_builtin(builtin_less_equal));
     dictionary_insert(dictionary, "not", new_builtin(builtin_not));
+    dictionary_insert(dictionary, "or", new_builtin(builtin_or));
+    dictionary_insert(dictionary, "and", new_builtin(builtin_and));
     dictionary_insert(dictionary, "print", new_builtin(builtin_print));
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
