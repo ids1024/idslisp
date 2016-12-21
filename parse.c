@@ -39,6 +39,10 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
         (*i)++;
         item = new_list(new_node(NULL, _parse_one(tokens, ntoks, i)));
         item->u.list = new_node(item->u.list, new_symbol("quote"));
+    } else if (strcmp(tokens[*i], "(") == 0 && (*i+1) < ntoks && \
+               strcmp(tokens[*i+1], ")") == 0) {
+        (*i)++;
+        item = &NIL_CONST;
     } else if (strcmp(tokens[*i], "(") == 0) {
         (*i)++;
         item = _parse_iter(tokens, ntoks, i);
