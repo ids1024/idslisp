@@ -233,6 +233,19 @@ Object *builtin_nth(Dictionary *dictionary, ListNode *args) {
     }
 }
 
+Object *builtin_read_line(Dictionary *dictionary, ListNode *args) {
+    char *line=NULL;
+    size_t n=0;
+    ssize_t len;
+
+    if (list_len(args) != 0)
+        error_message("Wrong number of arguments to 'read-line'.");
+
+    len = getline(&line, &n, stdin);
+    line[len-1] = '\0'; // Remove newline
+    return new_string(line);
+}
+
 Object *builtin_def(Dictionary *dictionary, ListNode *args) {
     char *name;
     Object *value;
@@ -314,6 +327,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "eval", new_builtin(builtin_eval));
     dictionary_insert(dictionary, "map", new_builtin(builtin_map));
     dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
+    dictionary_insert(dictionary, "read-line", new_builtin(builtin_read_line));
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
