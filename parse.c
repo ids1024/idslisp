@@ -79,16 +79,11 @@ Object **parse(char *code, int *nobjects) {
     tokens = tokenize(code, &ntoks);
 
     for (i=0; i<ntoks; i++) {
-        if (strcmp(tokens[i], "(") == 0) {
-            i++;
-            object = _parse_iter(tokens, ntoks, &i);
+        object = _parse_one(tokens, ntoks, &i);
 
-            (*nobjects)++;
-            objects = realloc(objects, *nobjects * sizeof(Object*));
-            objects[*nobjects-1] = object;
-        } else {
-            error_message("'%s' not allowed here.", tokens[i]);
-        }
+        (*nobjects)++;
+        objects = realloc(objects, *nobjects * sizeof(Object*));
+        objects[*nobjects-1] = object;
     }
 
     // Free the tokens array

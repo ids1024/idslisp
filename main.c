@@ -47,7 +47,6 @@ void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
 
     objects = parse(text, &nobjects);
     for (i = 0; i < nobjects; i++) {
-        assert(objects[i]->type == LIST);
         result = eval(dictionary, objects[i]);
         if (print) {
             object_print(result);
