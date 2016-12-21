@@ -9,6 +9,9 @@
 #include "util.h"
 
 
+Object *_parse_iter(char **tokens, int ntoks, int *i);
+
+
 Object *_str_to_num_object(char *text) {
     char *endptr;
     long int inum;
@@ -25,25 +28,40 @@ Object *_str_to_num_object(char *text) {
     return NULL;
 }
 
+Object *_parse_one(char **tokens, int ntoks, int *i) {
+    Object *item;
+
+    if (strcmp(tokens[*i], "\"") == 0) {
+        assert((ntoks >= *i+3) && (strcmp(tokens[*i+2], "\"") == 0));
+        item = new_string(tokens[*i+1]);
+        (*i) += 2;
+    } else if (strcmp(tokens[*i], "'") == 0) {
+        (*i)++;
+        item = new_list(new_node(NULL, _parse_one(tokens, ntoks, i)));
+        item->u.list = new_node(item->u.list, new_symbol("quote"));
+    } else if (strcmp(tokens[*i], "(") == 0) {
+        (*i)++;
+        item = _parse_iter(tokens, ntoks, i);
+    } else if (strcmp(tokens[*i], ")") == 0) {
+        item = NULL;
+    } else {
+        item = _str_to_num_object(tokens[*i]);
+        if (item == NULL)
+            item = new_symbol(tokens[*i]);
+    }
+
+    return item;
+}
+
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
     Object *item;
     ListNode *list=NULL, *prev_node;
 
     for (; *i<ntoks; (*i)++) {
-        if (strcmp(tokens[*i], "\"") == 0) {
-            assert((ntoks >= *i+3) && (strcmp(tokens[*i+2], "\"") == 0));
-            item = new_string(tokens[*i+1]);
-            (*i) += 2;
-        } else if (strcmp(tokens[*i], "(") == 0) {
-            (*i)++;
-            item = _parse_iter(tokens, ntoks, i);
-        } else if (strcmp(tokens[*i], ")") == 0) {
+        item = _parse_one(tokens, ntoks, i);
+
+        if (item == NULL)
             return new_list(list);
-        } else {
-            item = _str_to_num_object(tokens[*i]);
-            if (item == NULL)
-                item = new_symbol(tokens[*i]);
-        }
 
         // Append to linked list
         append_node(&list, &prev_node, item);
