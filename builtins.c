@@ -256,7 +256,7 @@ Object *builtin_def(Dictionary *dictionary, ListNode *args) {
         error_message("First argument to 'def' must be symbol.");
 
     name = args->value->u.s;
-    value = eval_arg(dictionary, list_nth(args, 1));
+    value = eval(dictionary, list_nth(args, 1));
 
     dictionary_insert(dictionary, name, value);
     return new_symbol(name);
@@ -294,11 +294,11 @@ Object *builtin_if(Dictionary *dictionary, ListNode *args) {
     if (list_len(args) != 3)
         error_message("Wrong number of arguments to 'if'.");
 
-    condition = eval_arg(dictionary, args->value);
+    condition = eval(dictionary, args->value);
     if (condition != &NIL_CONST)
-        value = eval_arg(dictionary, list_nth(args, 1));
+        value = eval(dictionary, list_nth(args, 1));
     else
-        value = eval_arg(dictionary, list_nth(args, 2));
+        value = eval(dictionary, list_nth(args, 2));
     garbage_collect(condition);
 
     return value;

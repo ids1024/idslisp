@@ -9,13 +9,15 @@
 #include "util.h"
 #include "dictionary.h"
 
-Object *eval_arg(Dictionary *dictionary, Object *arg) {
+Object *eval_list(Dictionary *dictionary, Object *object);
+
+Object *eval(Dictionary *dictionary, Object *arg) {
     Object *value;
 
     switch (arg->type) {
         case LIST:
             // Replace list with what it evluates to
-            value = eval(dictionary, arg);
+            value = eval_list(dictionary, arg);
             break;
         case SYMBOL:
             value = dictionary_get(dictionary, arg->u.s);
@@ -59,7 +61,7 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
     node = function->u.list->next;
     while (node != NULL) {
         garbage_collect(value);
-        value = eval_arg(local_dictionary, node->value);
+        value = eval(local_dictionary, node->value);
         node = node->next;
     }
 
@@ -68,12 +70,38 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
     return value;
 }
 
+Object *eval_list(Dictionary *dictionary, Object *object) {
+    char *command;
+    ListNode *args;
+    Object *function;
+    ListNode *list;
+
+    assert(object->type == LIST);
+    list = object->u.list;
+
+    if (list == NULL)
+        error_message("Cannot evaluate empty list.");
+    else if (list->value->type != SYMBOL)
+        error_message("Cannot evaluate non-symbol.");
+
+    command = list->value->u.s;
+    args = list->next;
+    function = dictionary_get(dictionary, command);
+
+    if (function == NULL)
+        error_message("'%s' undefined.", command);
+    else if (!object_iscallable(function))
+        error_message("'%s' not a function.", command);
+
+    return call_function(dictionary, function, args);
+}
+
 ListNode *map_eval(Dictionary *dictionary, ListNode *list) {
     ListNode *nodes=NULL, *prev_node, *oldnode;
     Object *value;
 
     for (oldnode=list; oldnode!=NULL; oldnode=oldnode->next) {
-        value = eval_arg(dictionary, oldnode->value);
+        value = eval(dictionary, oldnode->value);
         append_node(&nodes, &prev_node, value);
     }
 
@@ -103,30 +131,4 @@ Object *call_function(Dictionary *dictionary, Object *function, ListNode *args) 
     }
 
     return value;
-}
-
-Object *eval(Dictionary *dictionary, Object *object) {
-    char *command;
-    ListNode *args;
-    Object *function;
-    ListNode *list;
-
-    assert(object->type == LIST);
-    list = object->u.list;
-
-    if (list == NULL)
-        error_message("Cannot evaluate empty list.");
-    else if (list->value->type != SYMBOL)
-        error_message("Cannot evaluate non-symbol.");
-
-    command = list->value->u.s;
-    args = list->next;
-    function = dictionary_get(dictionary, command);
-
-    if (function == NULL)
-        error_message("'%s' undefined.", command);
-    else if (!object_iscallable(function))
-        error_message("'%s' not a function.", command);
-
-    return call_function(dictionary, function, args);
 }
