@@ -29,7 +29,7 @@ Object *_str_to_num_object(char *text) {
 }
 
 Object *_parse_one(char **tokens, int ntoks, int *i) {
-    Object *item;
+    Object *item, *car, *cdr;
 
     if (strcmp(tokens[*i], "\"") == 0) {
         assert((ntoks >= *i+3) && (strcmp(tokens[*i+2], "\"") == 0));
@@ -43,6 +43,15 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
                strcmp(tokens[*i+1], ")") == 0) {
         (*i)++;
         item = &NIL_CONST;
+    } else if (strcmp(tokens[*i], "(") == 0 && (*i+4) < ntoks && \
+               strcmp(tokens[*i+2], ".") == 0 && \
+               strcmp(tokens[*i+4], ")") == 0) {
+        (*i)++;
+        car = _parse_one(tokens, ntoks, i);
+        (*i) += 2;
+        cdr = _parse_one(tokens, ntoks, i);
+        (*i)++;
+        item = new_cons(car, cdr);
     } else if (strcmp(tokens[*i], "(") == 0) {
         (*i)++;
         item = _parse_iter(tokens, ntoks, i);
