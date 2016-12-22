@@ -13,23 +13,23 @@
     long int ivalue; \
     bool isdouble=false; \
     Object *object; \
-    \
-    for (ListNode *node=args; node!=NULL; node=node->next) { \
-        switch (node->value->type) { \
+    Object *value, *node=args; \
+    for (value=list_first(node); value!=NULL; value=list_next(&node)) { \
+        switch (value->type) { \
             case INT: \
                 if (node == args) \
-                    dvalue = ivalue = node->value->u.ld; \
+                    dvalue = ivalue = value->u.ld; \
                 else { \
-                    dvalue operator node->value->u.ld; \
-                    ivalue operator node->value->u.ld; \
+                    dvalue operator value->u.ld; \
+                    ivalue operator value->u.ld; \
                 } \
                 break; \
             case DOUBLE: \
                 isdouble = true; \
                 if (node == args) \
-                    dvalue = node->value->u.lf; \
+                    dvalue = value->u.lf; \
                 else \
-                    dvalue operator node->value->u.lf; \
+                    dvalue operator value->u.lf; \
                 break; \
             default: \
                 error_message("Invalid argument"); \
@@ -44,186 +44,193 @@
 })
 
 #define _COMPARISON_BUILTIN(operator, args) ({ \
-    double value, newvalue; \
+    double num, newnum; \
     bool result=true; \
-    ListNode *node; \
-    \
+    Object *value, *node=args; \
     \
     if (list_len(args) < 1) \
         error_message("Wrong number of arguments."); \
     \
-    for (node=args; node!=NULL && result; node=node->next) { \
-        switch (node->value->type) { \
+    for (value=list_first(node); value!=NULL; value=list_next(&node)) { \
+        switch (value->type) { \
             case INT: \
-                newvalue = node->value->u.ld; \
+                newnum = value->u.ld; \
                 break; \
             case DOUBLE: \
-                newvalue = node->value->u.lf; \
+                newnum = value->u.lf; \
                 break; \
             default: \
                 error_message("Invalid argument"); \
         } \
         if (node == args) \
-            value = newvalue; \
-        else if (!(value operator newvalue)) \
+            num = newnum; \
+        else if (!(num operator newnum)) \
             result = false; \
     } \
     \
     from_bool(result); \
 })
 
-Object *builtin_add(Dictionary *dictionary, ListNode *args) {
+Object *builtin_add(Dictionary *dictionary, Object *args) {
     return _OPERATOR_BUILTIN(+=, args);
 }
 
-Object *builtin_minus(Dictionary *dictionary, ListNode *args) {
+Object *builtin_minus(Dictionary *dictionary, Object *args) {
     return _OPERATOR_BUILTIN(-=, args);
 }
 
-Object *builtin_times(Dictionary *dictionary, ListNode *args) {
+Object *builtin_times(Dictionary *dictionary, Object *args) {
     return _OPERATOR_BUILTIN(*=, args);
 }
 
-Object *builtin_divide(Dictionary *dictionary, ListNode *args) {
+Object *builtin_divide(Dictionary *dictionary, Object *args) {
     return _OPERATOR_BUILTIN(/=, args);
 }
 
-Object *builtin_equal(Dictionary *dictionary, ListNode *args) {
+Object *builtin_equal(Dictionary *dictionary, Object *args) {
     return _COMPARISON_BUILTIN(==, args);
 }
 
-Object *builtin_greater(Dictionary *dictionary, ListNode *args) {
+Object *builtin_greater(Dictionary *dictionary, Object *args) {
     return _COMPARISON_BUILTIN(>, args);
 }
 
-Object *builtin_less(Dictionary *dictionary, ListNode *args) {
+Object *builtin_less(Dictionary *dictionary, Object *args) {
     return _COMPARISON_BUILTIN(<, args);
 }
 
-Object *builtin_greater_equal(Dictionary *dictionary, ListNode *args) {
+Object *builtin_greater_equal(Dictionary *dictionary, Object *args) {
     return _COMPARISON_BUILTIN(>=, args);
 }
 
-Object *builtin_less_equal(Dictionary *dictionary, ListNode *args) {
+Object *builtin_less_equal(Dictionary *dictionary, Object *args) {
     return _COMPARISON_BUILTIN(<=, args);
 }
 
-Object *builtin_not(Dictionary *dictionary, ListNode *args) {
+Object *builtin_not(Dictionary *dictionary, Object *args) {
     if (list_len(args) != 1)
         error_message("Wrong number of arguments to 'not'.");
-    return from_bool(!to_bool(args->value));
+    return from_bool(!to_bool(list_first(args)));
 }
 
-Object *builtin_or(Dictionary *dictionary, ListNode *args) {
-    for (ListNode *node=args; node!=NULL; node=node->next) {
-        if (to_bool(node->value)) {
-            node->value->refcount++;
-            return node->value;
+Object *builtin_or(Dictionary *dictionary, Object *args) {
+    Object *value, *node=args;
+    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+        if (to_bool(value)) {
+            value->refcount++;
+            return value;
         }
     }
     return &NIL_CONST;
 }
 
-Object *builtin_and(Dictionary *dictionary, ListNode *args) {
-    for (ListNode *node=args; node!=NULL; node=node->next) {
-        if (!to_bool(node->value)) {
-            node->value->refcount++;
-            return node->value;
+Object *builtin_and(Dictionary *dictionary, Object *args) {
+    Object *value, *node=args;
+    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+        if (!to_bool(value)) {
+            value->refcount++;
+            return value;
         }
     }
     return &T_CONST;
 }
 
-Object *builtin_print(Dictionary *dictionary, ListNode *args) {
-    ListNode *arg;
-
-    arg = args;
-    while (arg!=NULL) {
-        if (arg->value->type == STRING)
-            printf("%s", arg->value->u.s);
+Object *builtin_print(Dictionary *dictionary, Object *args) {
+    Object *value, *node=args;
+    value=list_first(node);
+    while (value != NULL) {
+        if (value->type == STRING)
+            printf("%s", value->u.s);
         else
-            object_print(arg->value);
+            object_print(value);
 
-        arg = arg->next;
-        if (arg != NULL)
+        value = list_next(&node);
+        if (value != NULL)
             printf(" ");
     }
     return &NIL_CONST;
 }
 
-Object *builtin_println(Dictionary *dictionary, ListNode *args) {
+Object *builtin_println(Dictionary *dictionary, Object *args) {
     Object *value = builtin_print(dictionary, args);
     printf("\n");
     return value;
 }
 
-Object *builtin_list(Dictionary *dictionary, ListNode *args) {
+Object *builtin_list(Dictionary *dictionary, Object *args) {
     args->refcount++;
-    return new_list(args);
+    return args;
 }
 
-Object *builtin_first(Dictionary *dictionary, ListNode *args) {
+Object *builtin_first(Dictionary *dictionary, Object *args) {
+    Object *object;
+
     if (list_len(args) != 1)
         error_message("Wrong number of arguments to 'first'.");
-    else if (args->value->type != LIST)
+
+    object = list_first(args);
+
+    if (!is_list(object))
         error_message("Argument to 'first' must be list.");
-    else if (args->value->u.list == NULL)
+    else if (object == &NIL_CONST)
         return &NIL_CONST;
     else {
-        args->value->u.list->value->refcount++;
-        return args->value->u.list->value;
+        list_first(object)->refcount++;
+        return list_first(object);
     }
 }
 
-Object *builtin_eval(Dictionary *dictionary, ListNode *args) {
+Object *builtin_eval(Dictionary *dictionary, Object *args) {
+    Object *object;
+
     if (list_len(args) != 1)
         error_message("Wrong number of arguments to 'eval'.");
-    else if (args->value->type != LIST)
+
+    object = list_first(args);
+
+    if (!is_list(object))
         error_message("Argument to 'eval' must be list.");
 
-    return eval(dictionary, args->value);
+    return eval(dictionary, object);
 }
 
-Object *builtin_map(Dictionary *dictionary, ListNode *args) {
-    Object *function, *value;
-    ListNode *item, *nodes=NULL, *prev_node, *newargs;
+Object *builtin_map(Dictionary *dictionary, Object *args) {
+    Object *function, *value, *argvalue, *arg=args, *nodes=NULL, *prev_node, *newargs;
 
     if (list_len(args) != 2)
         error_message("Wrong number of arguments to 'map'.");
-    else if (!(object_iscallable(args->value)))
+    else if (!(object_iscallable(list_first(args))))
         error_message("First argument to 'map' must be callable.");
-    else if (list_nth(args, 1)->type != LIST)
+    else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'map' must be list.");
 
-    function = args->value;
+    function = list_first(args);
 
-    item = list_nth(args, 1)->u.list;
-    while (item != NULL) {
-        item->value->refcount++;
-        newargs = new_node(NULL, item->value);
+    while ((argvalue = list_next(&arg)) != NULL) {
+        argvalue->refcount++;
+
+        newargs = new_cons(argvalue, &NIL_CONST);
         value = call_function(dictionary, function, newargs); 
-        garbage_collect_list(newargs);
+        garbage_collect(newargs);
         append_node(&nodes, &prev_node, value);
-        item = item->next;
     }
 
-    return new_list(nodes);
+    return nodes;
 }
 
-Object *builtin_nth(Dictionary *dictionary, ListNode *args) {
-    Object *value;
-    ListNode *list;
+Object *builtin_nth(Dictionary *dictionary, Object *args) {
+    Object *value, *list;
     int index;
 
     if (list_len(args) != 2)
         error_message("Wrong number of arguments to 'nth'.");
-    else if (args->value->type != INT)
+    else if (list_first(args) != INT)
         error_message("First argument to 'nth' must be integer.");
-    else if (list_nth(args, 1)->type != LIST)
+    else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'nth' must be list.");
 
-    index = args->value->u.ld;
-    list = list_nth(args, 1)->u.list;
+    index = list_first(args)->u.ld;
+    list = list_nth(args, 1);
     value = list_nth(list, index);
     if (value == NULL) {
         return &NIL_CONST;
@@ -233,7 +240,7 @@ Object *builtin_nth(Dictionary *dictionary, ListNode *args) {
     }
 }
 
-Object *builtin_read_line(Dictionary *dictionary, ListNode *args) {
+Object *builtin_read_line(Dictionary *dictionary, Object *args) {
     char *line=NULL;
     size_t n=0;
     ssize_t len;
@@ -246,55 +253,55 @@ Object *builtin_read_line(Dictionary *dictionary, ListNode *args) {
     return new_string(line);
 }
 
-Object *builtin_def(Dictionary *dictionary, ListNode *args) {
+Object *builtin_def(Dictionary *dictionary, Object *args) {
     char *name;
     Object *value;
 
     if (list_len(args) != 2)
         error_message("Wrong number of arguments to 'def'.");
-    else if (args->value->type != SYMBOL)
+    else if (list_first(args)->type != SYMBOL)
         error_message("First argument to 'def' must be symbol.");
 
-    name = args->value->u.s;
+    name = list_first(args)->u.s;
     value = eval(dictionary, list_nth(args, 1));
 
     dictionary_insert(dictionary, name, value);
     return new_symbol(name);
 }
 
-Object *builtin_quote(Dictionary *dictionary, ListNode *args) {
+Object *builtin_quote(Dictionary *dictionary, Object *args) {
     if (list_len(args) != 1)
         error_message("Wrong number of arguments to 'quote'.");
 
-    args->value->refcount++;
-    return args->value;
+    list_first(args)->refcount++;
+    return list_first(args);
 }
 
-Object *builtin_defun(Dictionary *dictionary, ListNode *args) {
+Object *builtin_defun(Dictionary *dictionary, Object *args) {
     char *name;
 
     if (list_len(args) < 2)
         error_message("Wrong number of arguments to 'defun'.");
-    else if (args->value->type != SYMBOL)
+    else if (list_first(args)->type != SYMBOL)
         error_message("First argument to 'defun' must be symbol.");
-    else if (list_nth(args, 1)->type != LIST)
+    else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'defun' must be list.");
 
     // TODO: Verify correctness of formatting
     
-    args->next->refcount++;
-    name = args->value->u.s;
-    dictionary_insert(dictionary, name, new_function(args->next));
+    name = list_first(args)->u.s;
+    args->u.cons.cdr->refcount++; // TODO: Better API here? 
+    dictionary_insert(dictionary, name, new_function(args->u.cons.cdr));
     return new_symbol(name);
 }
 
-Object *builtin_if(Dictionary *dictionary, ListNode *args) {
+Object *builtin_if(Dictionary *dictionary, Object *args) {
     Object *condition, *value;
 
     if (list_len(args) != 3)
         error_message("Wrong number of arguments to 'if'.");
 
-    condition = eval(dictionary, args->value);
+    condition = eval(dictionary, list_first(args));
     if (condition != &NIL_CONST)
         value = eval(dictionary, list_nth(args, 1));
     else

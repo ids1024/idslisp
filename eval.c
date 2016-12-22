@@ -15,9 +15,14 @@ Object *eval(Dictionary *dictionary, Object *arg) {
     Object *value;
 
     switch (arg->type) {
-        case LIST:
-            // Replace list with what it evluates to
-            value = eval_list(dictionary, arg);
+        case CONS:
+            if (is_list(arg))
+                // Replace list with what it evluates to
+                value = eval_list(dictionary, arg);
+            else
+                // XXX ?
+                value = arg;
+            value->refcount++;
             break;
         case SYMBOL:
             value = dictionary_get(dictionary, arg->u.s);
@@ -33,36 +38,36 @@ Object *eval(Dictionary *dictionary, Object *arg) {
     return value;
 }
 
-Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *args) {
+Object *call_user_function(Dictionary *dictionary, Object *function, Object *args) {
     Dictionary *local_dictionary;
-    ListNode *arg, *node;
-    Object *value;
+    Object *arg, *node, *argval, *nodeval, *value;
 
     assert(function->type == FUNCTION);
-    assert(function->u.list->value->type == LIST);
+    assert(is_list(list_first(function->u.obj)));
 
     // Set arguments as local variables
     local_dictionary = dictionary_new(dictionary);
-    node = function->u.list->value->u.list;
+    node = list_first(function->u.obj);
     arg = args;
-    while (node != NULL) {
-        assert(node->value->type == SYMBOL);
-        if (arg == NULL)
+    nodeval = list_first(node);
+    argval = list_first(arg);
+    while (nodeval != NULL) {
+        assert(nodeval->type == SYMBOL);
+        if (argval == NULL)
             error_message("Wrong number of arguments to function.");
 
-        arg->value->refcount++;
-        dictionary_insert(local_dictionary, node->value->u.s, arg->value);
-        arg = arg->next;
-        node=node->next;
+        argval->refcount++;
+        dictionary_insert(local_dictionary, nodeval->u.s, argval);
+        nodeval = list_next(&node);
+        argval = list_next(&arg);
     }
 
     // Execute code; last value will be return value
     value = &NIL_CONST;
-    node = function->u.list->next;
-    while (node != NULL) {
+    node = function->u.obj->u.cons.cdr;
+    for (nodeval=list_first(node); nodeval!=NULL; nodeval=list_next(&node)) {
         garbage_collect(value);
-        value = eval(local_dictionary, node->value);
-        node = node->next;
+        value = eval(local_dictionary, nodeval);
     }
 
     dictionary_free(local_dictionary);
@@ -72,20 +77,17 @@ Object *call_user_function(Dictionary *dictionary, Object *function, ListNode *a
 
 Object *eval_list(Dictionary *dictionary, Object *object) {
     char *command;
-    ListNode *args;
-    Object *function;
-    ListNode *list;
+    Object *args, *function;
 
-    assert(object->type == LIST);
-    list = object->u.list;
+    assert(is_list(object));
 
-    if (list == NULL)
+    if (object == &NIL_CONST)
         error_message("Cannot evaluate empty list.");
-    else if (list->value->type != SYMBOL)
+    else if (list_first(object)->type != SYMBOL)
         error_message("Cannot evaluate non-symbol.");
 
-    command = list->value->u.s;
-    args = list->next;
+    command = list_first(object)->u.s;
+    args = object->u.cons.cdr; // TODO: Better API here? 
     function = dictionary_get(dictionary, command);
 
     if (function == NULL)
@@ -96,32 +98,31 @@ Object *eval_list(Dictionary *dictionary, Object *object) {
     return call_function(dictionary, function, args);
 }
 
-ListNode *map_eval(Dictionary *dictionary, ListNode *list) {
-    ListNode *nodes=NULL, *prev_node, *oldnode;
-    Object *value;
+Object *map_eval(Dictionary *dictionary, Object *list) {
+    Object *nodes=&NIL_CONST, *prev_node, *oldnode, *value, *oldval;
 
-    for (oldnode=list; oldnode!=NULL; oldnode=oldnode->next) {
-        value = eval(dictionary, oldnode->value);
+    oldnode = list;
+    for (oldval=list_first(list); oldval!=NULL; oldval=list_next(&oldnode)) {
+        value = eval(dictionary, oldval);
         append_node(&nodes, &prev_node, value);
     }
 
     return nodes;
 }
 
-Object *call_function(Dictionary *dictionary, Object *function, ListNode *args) {
-    Object *value;
-    ListNode *tmpnodes;
+Object *call_function(Dictionary *dictionary, Object *function, Object *args) {
+    Object *value, *tmpnodes;
  
     switch (function->type) {
         case BUILTIN:
             tmpnodes = map_eval(dictionary, args);
             value = function->u.builtin(dictionary, tmpnodes);
-            garbage_collect_list(tmpnodes);
+            garbage_collect(tmpnodes);
             break;
         case FUNCTION:
             tmpnodes = map_eval(dictionary, args);
             value = call_user_function(dictionary, function, tmpnodes);
-            garbage_collect_list(tmpnodes);
+            garbage_collect(tmpnodes);
             break;
         case SPECIAL:
             value = function->u.builtin(dictionary, args);

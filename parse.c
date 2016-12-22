@@ -37,8 +37,8 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
         (*i) += 2;
     } else if (strcmp(tokens[*i], "'") == 0) {
         (*i)++;
-        item = new_list(new_node(NULL, _parse_one(tokens, ntoks, i)));
-        item->u.list = new_node(item->u.list, new_symbol("quote"));
+        item = new_cons(_parse_one(tokens, ntoks, i), &NIL_CONST);
+        item = new_cons(new_symbol("quote"), item);
     } else if (strcmp(tokens[*i], "(") == 0 && (*i+1) < ntoks && \
                strcmp(tokens[*i+1], ")") == 0) {
         (*i)++;
@@ -58,14 +58,13 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
 }
 
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
-    Object *item;
-    ListNode *list=NULL, *prev_node;
+    Object *item, *list=&NIL_CONST, *prev_node;
 
     for (; *i<ntoks; (*i)++) {
         item = _parse_one(tokens, ntoks, i);
 
         if (item == NULL)
-            return new_list(list);
+            return list;
 
         // Append to linked list
         append_node(&list, &prev_node, item);

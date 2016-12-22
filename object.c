@@ -17,36 +17,56 @@ Object T_CONST = {T};
     })
 
 
-ListNode *new_node(ListNode *next, Object *value) {
-    ListNode *node = malloc(sizeof(ListNode));
-    node->value = value;
-    node->next = next;
-    node->refcount = 1;
-    return node;
-}
-
-void append_node(ListNode **list, ListNode **prev, Object *value) {
-    ListNode *node = new_node(NULL, value);
-    if (*list == NULL)
+void append_node(Object **list, Object **prev, Object *value) {
+    Object *node = new_cons(value, &NIL_CONST);
+    if (*list == &NIL_CONST)
         *list = node;
-    else
-        (*prev)->next = node;
+    else {
+	assert((*prev)->type == CONS);
+        (*prev)->u.cons.cdr = node;
+    }
     *prev = node;
 }
 
-int list_len(ListNode *nodes) {
+bool is_list(Object *object) {
+    return(((object->type == CONS) && \
+            (object->u.cons.cdr == &NIL_CONST || \
+             object->u.cons.cdr->type == CONS)) || \
+           (object == &NIL_CONST));
+}
+
+Object *list_first(Object *object) {
+    assert(is_list(object));
+    if (object == &NIL_CONST)
+        return NULL;
+    else
+        return object->u.cons.car;
+}
+
+Object *list_next(Object **object) {
+    assert(is_list(*object) && *object != &NIL_CONST);
+    *object = (*object)->u.cons.cdr;
+    if (!is_list(*object))
+        return *object;
+    else
+        return list_first(*object);
+}
+
+int list_len(Object *nodes) {
     int count = 0;
-    ListNode *node;
-    for (node=nodes; node!=NULL; node=node->next) count++;
+    Object *value, *node=nodes;
+    for (value=list_first(nodes); value!=NULL; value=list_next(&node))
+        count++;
     return count;
 }
 
-Object *list_nth(ListNode *nodes, int n) {
+Object *list_nth(Object *nodes, int n) {
     int index = 0;
-    ListNode *node;
-    for (node=nodes; node!=NULL; node=node->next) {
+    Object *value, *node=nodes;
+    assert(is_list(node));
+    for (value=list_first(nodes); value!=NULL; value=list_next(&node)) {
         if (index == n)
-            return node->value;
+            return value;
         index++;
     }
 
@@ -69,12 +89,14 @@ Object *new_symbol(char *value) {
     return _NEW_OBJECT(SYMBOL, s, strdup(value));
 }
 
-Object *new_list(ListNode *value) {
-    return _NEW_OBJECT(LIST, list, value);
+Object *new_cons(Object *car, Object *cdr) {
+    Object *object = malloc(sizeof(Object));
+    *object = (Object){CONS, {.cons = {car, cdr}}, 1};
+    return object;
 }
 
-Object *new_function(ListNode *value) {
-    return _NEW_OBJECT(FUNCTION, list, value);
+Object *new_function(Object *value) {
+    return _NEW_OBJECT(FUNCTION, obj, value);
 }
 
 Object *new_builtin(BuiltinFunc value) {
@@ -114,9 +136,10 @@ void garbage_collect(Object *object) {
 
     if (object->refcount == 0) {
         switch (object->type) {
-            case LIST:
+            case CONS:
             case FUNCTION:
-                garbage_collect_list(object->u.list);
+                garbage_collect(object->u.cons.car);
+                garbage_collect(object->u.cons.cdr);
                 break;
             case STRING:
             case SYMBOL:
@@ -129,26 +152,32 @@ void garbage_collect(Object *object) {
     }
 }
 
-void garbage_collect_list(ListNode *list) {
-    ListNode *old_node, *node;
+void _print_cons(Object *object) {
+    Object *value, *node;
 
-    node = list;
-    while (node != NULL) {
-        node->refcount--;
-        assert(node->refcount >= 0);
-        if (node->refcount != 0)
-            break;
-
-        garbage_collect(node->value);
-        old_node = node;
-        node=node->next;
-        free(old_node);
+    assert(object->type == CONS);
+    if (is_list(object)) {
+        printf("(");
+        node = object;
+        value = list_first(node);
+        while (value != NULL) {
+            object_print(value);
+            value = list_next(&node);
+            if (value != NULL) {
+                printf(" ");
+            }
+        }
+        printf(")");
+    } else {
+        printf("(");
+        object_print(object->u.cons.car);
+        printf(" . ");
+        object_print(object->u.cons.cdr);
+        printf(")");
     }
 }
 
 void object_print(Object *object) {
-    ListNode *node;
-
     switch (object->type) {
         case INT:
             printf("%ld", object->u.ld);
@@ -162,17 +191,8 @@ void object_print(Object *object) {
         case SYMBOL:
             printf("%s", object->u.s);
 	    break;
-        case LIST:
-            printf("(");
-            node = object->u.list;
-            while (node != NULL) {
-                object_print(node->value);
-                node = node->next;
-                if (node != NULL) {
-                    printf(" ");
-                }
-            }
-            printf(")");
+        case CONS:
+            _print_cons(object);
             break;
         case BUILTIN:
             printf("<built-in function>");
