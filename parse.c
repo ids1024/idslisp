@@ -46,6 +46,7 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
     } else if (strcmp(tokens[*i], "(") == 0 && (*i+4) < ntoks && \
                strcmp(tokens[*i+2], ".") == 0 && \
                strcmp(tokens[*i+4], ")") == 0) {
+        // Cons (eg. (1 . 2))
         (*i)++;
         car = _parse_one(tokens, ntoks, i);
         (*i) += 2;
