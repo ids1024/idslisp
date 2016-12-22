@@ -266,6 +266,24 @@ Object *builtin_cons(Dictionary *dictionary, Object *args) {
     return new_cons(car, cdr);
 }
 
+Object *builtin_car(Dictionary *dictionary, Object *args) {
+    if (list_len(args) != 1)
+        error_message("Wrong number of arguments to 'car'.");
+    else if (!is_list(list_first(args)))
+        error_message("First argument to 'car' must be list.");
+
+    return list_first(args)->u.cons.car;
+}
+
+Object *builtin_cdr(Dictionary *dictionary, Object *args) {
+    if (list_len(args) != 1)
+        error_message("Wrong number of arguments to 'cdr'.");
+    else if (!is_list(list_first(args)))
+        error_message("First argument to 'cdr' must be list.");
+
+    return list_first(args)->u.cons.cdr;
+}
+
 Object *builtin_def(Dictionary *dictionary, Object *args) {
     char *name;
     Object *value;
@@ -349,6 +367,8 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
     dictionary_insert(dictionary, "read-line", new_builtin(builtin_read_line));
     dictionary_insert(dictionary, "cons", new_builtin(builtin_cons));
+    dictionary_insert(dictionary, "car", new_builtin(builtin_car));
+    dictionary_insert(dictionary, "cdr", new_builtin(builtin_cdr));
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
