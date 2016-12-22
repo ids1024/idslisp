@@ -44,11 +44,19 @@ Object *list_first(Object *object) {
 }
 
 Object *list_next(Object **object) {
+    Object *value;
+
+    if (*object == NULL)
+        return NULL;
+
     assert(is_list(*object) && *object != &NIL_CONST);
     *object = (*object)->u.cons.cdr;
-    if (!is_list(*object))
-        return *object;
-    else
+
+    if (!is_list(*object)) {
+        value = *object;
+        *object = NULL;
+        return value;
+    } else
         return list_first(*object);
 }
 

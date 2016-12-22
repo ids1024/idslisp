@@ -253,6 +253,19 @@ Object *builtin_read_line(Dictionary *dictionary, Object *args) {
     return new_string(line);
 }
 
+Object *builtin_cons(Dictionary *dictionary, Object *args) {
+    Object *car, *cdr;
+
+    if (list_len(args) != 2)
+        error_message("Wrong number of arguments to 'cons'.");
+
+    car = list_first(args);
+    cdr = list_nth(args, 1);
+    car->refcount++;
+    cdr->refcount++;
+    return new_cons(car, cdr);
+}
+
 Object *builtin_def(Dictionary *dictionary, Object *args) {
     char *name;
     Object *value;
@@ -335,6 +348,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "map", new_builtin(builtin_map));
     dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
     dictionary_insert(dictionary, "read-line", new_builtin(builtin_read_line));
+    dictionary_insert(dictionary, "cons", new_builtin(builtin_cons));
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
