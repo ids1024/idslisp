@@ -15,21 +15,20 @@ Object *eval(Dictionary *dictionary, Object *arg) {
     Object *value;
 
     switch (arg->type) {
-        case CONS:
-            if (is_list(arg))
-                // Replace list with what it evluates to
-                value = eval_list(dictionary, arg);
-            else
-                // XXX ?
-                value = arg;
-            value->refcount++;
-            break;
         case SYMBOL:
             value = dictionary_get(dictionary, arg->u.s);
             if (value == NULL)
                 error_message("'%s' undefined.", arg->u.s);
             value->refcount++;
             break;
+        case CONS:
+            if (is_list(arg)) {
+                // Replace list with what it evluates to
+                value = eval_list(dictionary, arg);
+                break;
+            }
+            // XXX ?
+            // FALLTHROUGH
         default:
             value = arg;
             value->refcount++;
