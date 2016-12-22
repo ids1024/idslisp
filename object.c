@@ -145,9 +145,11 @@ void garbage_collect(Object *object) {
     if (object->refcount == 0) {
         switch (object->type) {
             case CONS:
-            case FUNCTION:
                 garbage_collect(object->u.cons.car);
                 garbage_collect(object->u.cons.cdr);
+                break;
+            case FUNCTION:
+                garbage_collect(object->u.obj);
                 break;
             case STRING:
             case SYMBOL:
