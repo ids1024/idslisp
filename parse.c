@@ -66,8 +66,9 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
                 // Cons (eg. (1 . 2))
                 car = list_first(list);
                 cdr = list_nth(list, 2);
-                garbage_collect(list_nth(list, 1));
-                free(list);
+                car->refcount++;
+                cdr->refcount++;
+                garbage_collect(list);
                 return new_cons(car, cdr);
             }
             return list;
