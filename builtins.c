@@ -9,6 +9,12 @@
 #include "dictionary.h"
 
 
+void _args_num(char *name, Object *args, int num) {
+    if (list_len(args) != num)
+        error_message("Wrong number of arguments to '%s'.", name);
+}
+
+
 #define _OPERATOR_BUILTIN(operator, args) ({ \
     double dvalue; \
     long int ivalue; \
@@ -109,8 +115,7 @@ Object *builtin_less_equal(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_not(Dictionary *dictionary, Object *args) {
-    if (list_len(args) != 1)
-        error_message("Wrong number of arguments to 'not'.");
+    _args_num("not", args, 1);
     return from_bool(!to_bool(list_first(args)));
 }
 
@@ -166,9 +171,7 @@ Object *builtin_list(Dictionary *dictionary, Object *args) {
 Object *builtin_first(Dictionary *dictionary, Object *args) {
     Object *object;
 
-    if (list_len(args) != 1)
-        error_message("Wrong number of arguments to 'first'.");
-
+    _args_num("first", args, 1);
     object = list_first(args);
 
     if (!is_list(object))
@@ -184,9 +187,7 @@ Object *builtin_first(Dictionary *dictionary, Object *args) {
 Object *builtin_eval(Dictionary *dictionary, Object *args) {
     Object *object;
 
-    if (list_len(args) != 1)
-        error_message("Wrong number of arguments to 'eval'.");
-
+    _args_num("eval", args, 1);
     object = list_first(args);
 
     if (!is_list(object))
@@ -198,9 +199,8 @@ Object *builtin_eval(Dictionary *dictionary, Object *args) {
 Object *builtin_map(Dictionary *dictionary, Object *args) {
     Object *function, *value, *item, *itemval, *nodes=&NIL_CONST, *prev, *newargs;
 
-    if (list_len(args) != 2)
-        error_message("Wrong number of arguments to 'map'.");
-    else if (!(object_iscallable(list_first(args))))
+    _args_num("map", args, 2);
+    if (!(object_iscallable(list_first(args))))
         error_message("First argument to 'map' must be callable.");
     else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'map' must be list.");
@@ -224,9 +224,8 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
     Object *value, *list;
     int index;
 
-    if (list_len(args) != 2)
-        error_message("Wrong number of arguments to 'nth'.");
-    else if (list_first(args)->type != INT)
+    _args_num("nth", args, 2);
+    if (list_first(args)->type != INT)
         error_message("First argument to 'nth' must be integer.");
     else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'nth' must be list.");
@@ -247,9 +246,7 @@ Object *builtin_read_line(Dictionary *dictionary, Object *args) {
     size_t n=0;
     ssize_t len;
 
-    if (list_len(args) != 0)
-        error_message("Wrong number of arguments to 'read-line'.");
-
+    _args_num("read-line", args, 0);
     len = getline(&line, &n, stdin);
     line[len-1] = '\0'; // Remove newline
     return new_string(line);
@@ -262,9 +259,7 @@ Object *builtin_read(Dictionary *dictionary, Object *args) {
     size_t n=0;
     ssize_t len;
 
-    if (list_len(args) != 0)
-        error_message("Wrong number of arguments to 'read'.");
-
+    _args_num("read", args, 0);
     len = getline(&line, &n, stdin);
     line[len-1] = '\0'; // Remove newline
 
@@ -286,9 +281,7 @@ Object *builtin_read(Dictionary *dictionary, Object *args) {
 Object *builtin_cons(Dictionary *dictionary, Object *args) {
     Object *car, *cdr;
 
-    if (list_len(args) != 2)
-        error_message("Wrong number of arguments to 'cons'.");
-
+    _args_num("cons", args, 2);
     car = list_first(args);
     cdr = list_nth(args, 1);
     car->refcount++;
@@ -297,18 +290,16 @@ Object *builtin_cons(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_car(Dictionary *dictionary, Object *args) {
-    if (list_len(args) != 1)
-        error_message("Wrong number of arguments to 'car'.");
-    else if (!is_list(list_first(args)))
+    _args_num("car", args, 1);
+    if (!is_list(list_first(args)))
         error_message("First argument to 'car' must be list.");
 
     return list_first(args)->u.cons.car;
 }
 
 Object *builtin_cdr(Dictionary *dictionary, Object *args) {
-    if (list_len(args) != 1)
-        error_message("Wrong number of arguments to 'cdr'.");
-    else if (!is_list(list_first(args)))
+    _args_num("cdr", args, 1);
+    if (!is_list(list_first(args)))
         error_message("First argument to 'cdr' must be list.");
 
     return list_first(args)->u.cons.cdr;
@@ -318,9 +309,8 @@ Object *builtin_def(Dictionary *dictionary, Object *args) {
     char *name;
     Object *value;
 
-    if (list_len(args) != 2)
-        error_message("Wrong number of arguments to 'def'.");
-    else if (list_first(args)->type != SYMBOL)
+    _args_num("def", args, 2);
+    if (list_first(args)->type != SYMBOL)
         error_message("First argument to 'def' must be symbol.");
 
     name = list_first(args)->u.s;
@@ -331,9 +321,7 @@ Object *builtin_def(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_quote(Dictionary *dictionary, Object *args) {
-    if (list_len(args) != 1)
-        error_message("Wrong number of arguments to 'quote'.");
-
+    _args_num("quote", args, 1);
     list_first(args)->refcount++;
     return list_first(args);
 }
@@ -341,9 +329,8 @@ Object *builtin_quote(Dictionary *dictionary, Object *args) {
 Object *builtin_defun(Dictionary *dictionary, Object *args) {
     char *name;
 
-    if (list_len(args) < 2)
-        error_message("Wrong number of arguments to 'defun'.");
-    else if (list_first(args)->type != SYMBOL)
+    _args_num("defun", args, 2);
+    if (list_first(args)->type != SYMBOL)
         error_message("First argument to 'defun' must be symbol.");
     else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'defun' must be list.");
@@ -359,8 +346,7 @@ Object *builtin_defun(Dictionary *dictionary, Object *args) {
 Object *builtin_if(Dictionary *dictionary, Object *args) {
     Object *condition, *value;
 
-    if (list_len(args) != 3)
-        error_message("Wrong number of arguments to 'if'.");
+    _args_num("if", args, 3);
 
     condition = eval(dictionary, list_first(args));
     if (condition != &NIL_CONST)
