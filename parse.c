@@ -39,9 +39,9 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
         (*i)++;
         item = new_cons(_parse_one(tokens, ntoks, i), &NIL_CONST);
         item = new_cons(new_symbol("quote"), item);
-    } else if ((*i+4) < ntoks && \
-               strcmp(tokens[*i], "(") == 0 && \
-               strcmp(tokens[*i+2], ".") == 0 && \
+    } else if ((*i+4) < ntoks &&
+               strcmp(tokens[*i], "(") == 0 &&
+               strcmp(tokens[*i+2], ".") == 0 &&
                strcmp(tokens[*i+4], ")") == 0) {
         // Cons (eg. (1 . 2))
         (*i)++;
