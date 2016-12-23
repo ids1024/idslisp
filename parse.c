@@ -29,7 +29,7 @@ Object *_str_to_num_object(char *text) {
 }
 
 Object *_parse_one(char **tokens, int ntoks, int *i) {
-    Object *item, *car, *cdr;
+    Object *item;
 
     if (strcmp(tokens[*i], "\"") == 0) {
         assert((ntoks >= *i+3) && (strcmp(tokens[*i+2], "\"") == 0));
@@ -39,17 +39,6 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
         (*i)++;
         item = new_cons(_parse_one(tokens, ntoks, i), &NIL_CONST);
         item = new_cons(new_symbol("quote"), item);
-    } else if ((*i+4) < ntoks &&
-               strcmp(tokens[*i], "(") == 0 &&
-               strcmp(tokens[*i+2], ".") == 0 &&
-               strcmp(tokens[*i+4], ")") == 0) {
-        // Cons (eg. (1 . 2))
-        (*i)++;
-        car = _parse_one(tokens, ntoks, i);
-        (*i) += 2;
-        cdr = _parse_one(tokens, ntoks, i);
-        (*i)++;
-        item = new_cons(car, cdr);
     } else if (strcmp(tokens[*i], "(") == 0) {
         (*i)++;
         item = _parse_iter(tokens, ntoks, i);
@@ -65,13 +54,24 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
 }
 
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
-    Object *item, *list=&NIL_CONST, *prev_node;
+    Object *item, *car, *cdr,  *list=&NIL_CONST, *prev_node;
 
     for (; *i<ntoks; (*i)++) {
         item = _parse_one(tokens, ntoks, i);
 
-        if (item == NULL)
+        if (item == NULL) {
+            if (list_len(list) == 3 &&
+                list_nth(list, 1)->type == SYMBOL &&
+                strcmp(list_nth(list, 1)->u.s, ".") == 0) {
+                // Cons (eg. (1 . 2))
+                car = list_first(list);
+                cdr = list_nth(list, 2);
+                garbage_collect(list_nth(list, 1));
+                free(list);
+                return new_cons(car, cdr);
+            }
             return list;
+        }
 
         // Append to linked list
         append_node(&list, &prev_node, item);
