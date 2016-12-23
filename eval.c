@@ -31,7 +31,6 @@ Object *eval(Dictionary *dictionary, Object *arg) {
 Object *eval_progn(Dictionary *dictionary, Object *nodes) {
     Object *node, *nodeval, *value;
 
-    // Execute code; last value will be return value
     value = &NIL_CONST;
     node = nodes;
     for (nodeval=list_first(node); nodeval!=NULL; nodeval=list_next(&node)) {
