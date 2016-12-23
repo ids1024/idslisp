@@ -5,6 +5,7 @@
 #include "builtins.h"
 #include "util.h"
 #include "eval.h"
+#include "parse.h"
 #include "dictionary.h"
 
 
@@ -254,6 +255,34 @@ Object *builtin_read_line(Dictionary *dictionary, Object *args) {
     return new_string(line);
 }
 
+Object *builtin_read(Dictionary *dictionary, Object *args) {
+    Object *value, **objects;
+    int nobjects, i;
+    char *line=NULL;
+    size_t n=0;
+    ssize_t len;
+
+    if (list_len(args) != 0)
+        error_message("Wrong number of arguments to 'read'.");
+
+    len = getline(&line, &n, stdin);
+    line[len-1] = '\0'; // Remove newline
+
+    objects = parse(line, &nobjects);
+    if (nobjects == 0)
+        error_message("No parsable input.");
+    value = objects[0];
+
+    // TODO: Multiple return values?
+    // https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node93.html
+
+    for (i = 1; i < nobjects; i++)
+        garbage_collect(objects[i]);
+    free(objects);
+
+    return value;
+}
+
 Object *builtin_cons(Dictionary *dictionary, Object *args) {
     Object *car, *cdr;
 
@@ -367,6 +396,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "map", new_builtin(builtin_map));
     dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
     dictionary_insert(dictionary, "read-line", new_builtin(builtin_read_line));
+    dictionary_insert(dictionary, "read", new_builtin(builtin_read));
     dictionary_insert(dictionary, "cons", new_builtin(builtin_cons));
     dictionary_insert(dictionary, "car", new_builtin(builtin_car));
     dictionary_insert(dictionary, "cdr", new_builtin(builtin_cdr));
