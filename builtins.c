@@ -313,6 +313,10 @@ Object *builtin_quote(Dictionary *dictionary, Object *args) {
     return ref(list_first(args));
 }
 
+Object *builtin_progn(Dictionary *dictionary, Object *args) {
+    return eval_progn(dictionary, args);
+}
+
 Object *builtin_defun(Dictionary *dictionary, Object *args) {
     char *name;
 
@@ -377,6 +381,7 @@ void builtins_load(Dictionary *dictionary) {
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
+    dictionary_insert(dictionary, "progn", new_special(builtin_progn));
     dictionary_insert(dictionary, "defun", new_special(builtin_defun));
     dictionary_insert(dictionary, "if", new_special(builtin_if));
 }

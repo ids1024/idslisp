@@ -28,6 +28,20 @@ Object *eval(Dictionary *dictionary, Object *arg) {
     return value;
 }
 
+Object *eval_progn(Dictionary *dictionary, Object *nodes) {
+    Object *node, *nodeval, *value;
+
+    // Execute code; last value will be return value
+    value = &NIL_CONST;
+    node = nodes;
+    for (nodeval=list_first(node); nodeval!=NULL; nodeval=list_next(&node)) {
+        garbage_collect(value);
+        value = eval(dictionary, nodeval);
+    }
+
+    return value;
+}
+
 Object *call_user_function(Dictionary *dictionary, Object *function, Object *args) {
     Dictionary *local_dictionary;
     Object *arg, *node, *argval, *nodeval, *value;
@@ -52,12 +66,7 @@ Object *call_user_function(Dictionary *dictionary, Object *function, Object *arg
     }
 
     // Execute code; last value will be return value
-    value = &NIL_CONST;
-    node = function->u.obj->u.cons.cdr;
-    for (nodeval=list_first(node); nodeval!=NULL; nodeval=list_next(&node)) {
-        garbage_collect(value);
-        value = eval(local_dictionary, nodeval);
-    }
+    value = eval_progn(local_dictionary, function->u.obj->u.cons.cdr);
 
     dictionary_free(local_dictionary);
 
