@@ -195,7 +195,7 @@ Object *builtin_eval(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_map(Dictionary *dictionary, Object *args) {
-    Object *function, *value, *argvalue, *arg=args, *nodes=NULL, *prev_node, *newargs;
+    Object *function, *value, *item, *itemval, *nodes=&NIL_CONST, *prev, *newargs;
 
     if (list_len(args) != 2)
         error_message("Wrong number of arguments to 'map'.");
@@ -206,13 +206,14 @@ Object *builtin_map(Dictionary *dictionary, Object *args) {
 
     function = list_first(args);
 
-    while ((argvalue = list_next(&arg)) != NULL) {
-        argvalue->refcount++;
+    item = list_nth(args, 1);
+    for (itemval=list_first(item); itemval!=NULL; itemval=list_next(&item)) {
+        itemval->refcount++;
 
-        newargs = new_cons(argvalue, &NIL_CONST);
+        newargs = new_cons(itemval, &NIL_CONST);
         value = call_function(dictionary, function, newargs); 
         garbage_collect(newargs);
-        append_node(&nodes, &prev_node, value);
+        append_node(&nodes, &prev, value);
     }
 
     return nodes;
