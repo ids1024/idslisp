@@ -35,10 +35,7 @@ bool is_list(Object *object) {
 
 Object *list_first(Object *object) {
     assert(is_list(object));
-    if (object == &NIL_CONST)
-        return NULL;
-    else
-        return object->u.cons.car;
+    return (object == &NIL_CONST) ? NULL : object->u.cons.car;
 }
 
 Object *list_next(Object **object) {
@@ -112,7 +109,7 @@ Object *new_special(BuiltinFunc value) {
 }
 
 Object *from_bool(bool value) {
-    return (value ? &T_CONST : &NIL_CONST);
+    return (value) ? &T_CONST : &NIL_CONST;
 }
 
 bool to_bool(Object *value) {
