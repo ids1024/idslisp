@@ -316,8 +316,9 @@ Object *builtin_quote(Dictionary *dictionary, Object *args) {
 Object *builtin_defun(Dictionary *dictionary, Object *args) {
     char *name;
 
-    _args_num("defun", args, 2);
-    if (list_first(args)->type != SYMBOL)
+    if (list_len(args) < 2)
+        error_message("Wrong number of arguments to 'defun'.");
+    else if (list_first(args)->type != SYMBOL)
         error_message("First argument to 'defun' must be symbol.");
     else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'defun' must be list.");
