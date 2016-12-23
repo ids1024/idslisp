@@ -8,11 +8,9 @@
 Object NIL_CONST = {NIL};
 Object T_CONST = {T};
 
-#define _NEW_OBJECT(typename, utype, value) ({ \
+#define _NEW_OBJECT(typename, utype, ...) ({ \
         Object *object = malloc(sizeof(Object)); \
-        object->type = typename; \
-        object->u.utype = value; \
-        object->refcount = 1; \
+        *object = (Object){typename, {.utype = __VA_ARGS__}, 1}; \
         object; \
     })
 
@@ -98,9 +96,7 @@ Object *new_symbol(char *value) {
 }
 
 Object *new_cons(Object *car, Object *cdr) {
-    Object *object = malloc(sizeof(Object));
-    *object = (Object){CONS, {.cons = {car, cdr}}, 1};
-    return object;
+    return _NEW_OBJECT(CONS, cons, {car, cdr});
 }
 
 Object *new_function(Object *value) {
