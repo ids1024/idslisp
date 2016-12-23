@@ -9,8 +9,7 @@
 
 Dictionary *dictionary_new(Dictionary *parent) {
     Dictionary *dictionary = malloc(sizeof(Dictionary));
-    dictionary->first = NULL;
-    dictionary->parent = parent;
+    *dictionary = (Dictionary){NULL, parent};
     return dictionary;
 }
 
@@ -43,9 +42,7 @@ void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
         entry->value = value;
     } else {
         entry = malloc(sizeof(_DictionaryEntry));
-        entry->key = strdup(key);
-        entry->value = value;
-        entry->next = dictionary->first;
+        *entry = (_DictionaryEntry){strdup(key), value, dictionary->first};
         dictionary->first = entry;
     }
 }
