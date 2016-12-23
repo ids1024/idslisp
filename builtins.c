@@ -173,9 +173,8 @@ Object *builtin_first(Dictionary *dictionary, Object *args) {
         error_message("Argument to 'first' must be list.");
     else if (object == &NIL_CONST)
         return &NIL_CONST;
-    else {
+    else
         return ref(list_first(object));
-    }
 }
 
 Object *builtin_eval(Dictionary *dictionary, Object *args) {
