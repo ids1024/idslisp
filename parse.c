@@ -39,10 +39,6 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
         (*i)++;
         item = new_cons(_parse_one(tokens, ntoks, i), &NIL_CONST);
         item = new_cons(new_symbol("quote"), item);
-    } else if (strcmp(tokens[*i], "(") == 0 && (*i+1) < ntoks && \
-               strcmp(tokens[*i+1], ")") == 0) {
-        (*i)++;
-        item = &NIL_CONST;
     } else if (strcmp(tokens[*i], "(") == 0 && (*i+4) < ntoks && \
                strcmp(tokens[*i+2], ".") == 0 && \
                strcmp(tokens[*i+4], ")") == 0) {
