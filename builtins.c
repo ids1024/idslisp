@@ -122,10 +122,8 @@ Object *builtin_not(Dictionary *dictionary, Object *args) {
 Object *builtin_or(Dictionary *dictionary, Object *args) {
     Object *value, *node=args;
     for (value=list_first(node); value!=NULL; value=list_next(&node)) {
-        if (to_bool(value)) {
-            value->refcount++;
-            return value;
-        }
+        if (to_bool(value))
+            return ref(value);
     }
     return &NIL_CONST;
 }
@@ -133,10 +131,8 @@ Object *builtin_or(Dictionary *dictionary, Object *args) {
 Object *builtin_and(Dictionary *dictionary, Object *args) {
     Object *value, *node=args;
     for (value=list_first(node); value!=NULL; value=list_next(&node)) {
-        if (!to_bool(value)) {
-            value->refcount++;
-            return value;
-        }
+        if (!to_bool(value))
+            return ref(value);
     }
     return &T_CONST;
 }
@@ -164,8 +160,7 @@ Object *builtin_println(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_list(Dictionary *dictionary, Object *args) {
-    args->refcount++;
-    return args;
+    return ref(args);
 }
 
 Object *builtin_first(Dictionary *dictionary, Object *args) {
@@ -179,8 +174,7 @@ Object *builtin_first(Dictionary *dictionary, Object *args) {
     else if (object == &NIL_CONST)
         return &NIL_CONST;
     else {
-        list_first(object)->refcount++;
-        return list_first(object);
+        return ref(list_first(object));
     }
 }
 
@@ -209,9 +203,7 @@ Object *builtin_map(Dictionary *dictionary, Object *args) {
 
     item = list_nth(args, 1);
     for (itemval=list_first(item); itemval!=NULL; itemval=list_next(&item)) {
-        itemval->refcount++;
-
-        newargs = new_cons(itemval, &NIL_CONST);
+        newargs = new_cons(ref(itemval), &NIL_CONST);
         value = call_function(dictionary, function, newargs); 
         garbage_collect(newargs);
         append_node(&nodes, &prev, value);
@@ -236,8 +228,7 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
     if (value == NULL) {
         return &NIL_CONST;
     } else {
-        value->refcount++;
-        return value;
+        return ref(value);
     }
 }
 
@@ -284,9 +275,7 @@ Object *builtin_cons(Dictionary *dictionary, Object *args) {
     _args_num("cons", args, 2);
     car = list_first(args);
     cdr = list_nth(args, 1);
-    car->refcount++;
-    cdr->refcount++;
-    return new_cons(car, cdr);
+    return new_cons(ref(car), ref(cdr));
 }
 
 Object *builtin_car(Dictionary *dictionary, Object *args) {
@@ -322,8 +311,7 @@ Object *builtin_def(Dictionary *dictionary, Object *args) {
 
 Object *builtin_quote(Dictionary *dictionary, Object *args) {
     _args_num("quote", args, 1);
-    list_first(args)->refcount++;
-    return list_first(args);
+    return ref(list_first(args));
 }
 
 Object *builtin_defun(Dictionary *dictionary, Object *args) {
@@ -338,8 +326,8 @@ Object *builtin_defun(Dictionary *dictionary, Object *args) {
     // TODO: Verify correctness of formatting
     
     name = list_first(args)->u.s;
-    args->u.cons.cdr->refcount++; // TODO: Better API here? 
-    dictionary_insert(dictionary, name, new_function(args->u.cons.cdr));
+    // TODO: Better API here? 
+    dictionary_insert(dictionary, name, new_function(ref(args->u.cons.cdr)));
     return new_symbol(name);
 }
 

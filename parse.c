@@ -64,10 +64,8 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
                 list_nth(list, 1)->type == SYMBOL &&
                 strcmp(list_nth(list, 1)->u.s, ".") == 0) {
                 // Cons (eg. (1 . 2))
-                car = list_first(list);
-                cdr = list_nth(list, 2);
-                car->refcount++;
-                cdr->refcount++;
+                car = ref(list_first(list));
+                cdr = ref(list_nth(list, 2));
                 garbage_collect(list);
                 return new_cons(car, cdr);
             }

@@ -15,16 +15,14 @@ Object *eval(Dictionary *dictionary, Object *arg) {
     Object *value;
 
     if (arg->type == SYMBOL) {
-        value = dictionary_get(dictionary, arg->u.s);
+        value = ref(dictionary_get(dictionary, arg->u.s));
         if (value == NULL)
             error_message("'%s' undefined.", arg->u.s);
-        value->refcount++;
     } else if (is_list(arg)) {
         // Replace list with what it evluates to
         value = eval_list(dictionary, arg);
     } else {
-        value = arg;
-        value->refcount++;
+        value = ref(arg);
     }
 
     return value;
@@ -48,8 +46,7 @@ Object *call_user_function(Dictionary *dictionary, Object *function, Object *arg
         if (argval == NULL)
             error_message("Wrong number of arguments to function.");
 
-        argval->refcount++;
-        dictionary_insert(local_dictionary, nodeval->u.s, argval);
+        dictionary_insert(local_dictionary, nodeval->u.s, ref(argval));
         nodeval = list_next(&node);
         argval = list_next(&arg);
     }

@@ -25,6 +25,13 @@ typedef struct Object_ {
     int refcount;
 } Object;
 
+#define ref(obj) ({ \
+    Object *_obj = obj; \
+    if (_obj != NULL) \
+        _obj->refcount++; \
+    _obj; \
+})
+
 
 void append_node(Object **list, Object **prev, Object *value);
 bool is_list(Object *object);
