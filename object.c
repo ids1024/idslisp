@@ -112,10 +112,7 @@ Object *new_special(BuiltinFunc value) {
 }
 
 Object *from_bool(bool value) {
-    if (value)
-        return &T_CONST;
-    else
-        return &NIL_CONST;
+    return (value ? &T_CONST : &NIL_CONST);
 }
 
 bool to_bool(Object *value) {
