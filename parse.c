@@ -94,6 +94,9 @@ Object **parse(char *code, int *nobjects) {
     for (i=0; i<ntoks; i++) {
         object = _parse_one(tokens, ntoks, &i);
 
+        if (object == NULL)
+            error_message("')' with no matching '('");
+
         (*nobjects)++;
         objects = realloc(objects, *nobjects * sizeof(Object*));
         objects[*nobjects-1] = object;
