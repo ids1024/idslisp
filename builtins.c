@@ -225,7 +225,7 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
 
     if (list_len(args) != 2)
         error_message("Wrong number of arguments to 'nth'.");
-    else if (list_first(args) != INT)
+    else if (list_first(args)->type != INT)
         error_message("First argument to 'nth' must be integer.");
     else if (!is_list(list_nth(args, 1)))
         error_message("Second argument to 'nth' must be list.");
