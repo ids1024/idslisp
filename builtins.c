@@ -371,6 +371,34 @@ Object *builtin_progn(Dictionary *dictionary, Object *args) {
     return eval_progn(dictionary, args);
 }
 
+Object *builtin_let(Dictionary *dictionary, Object *args) {
+    Dictionary *local_dictionary;
+    Object *value, *node;
+    char *key;
+
+    if (list_len(args) < 2)
+        error_message("Wrong number of arguments to 'let'.");
+    else if (!is_list(list_first(args)))
+        error_message("First argument to 'let' must be list.");
+
+    local_dictionary = dictionary_new(dictionary);
+
+    node = list_first(args);
+    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+        if (!is_list(value) || list_len(value) != 2 || 
+            list_first(value)->type != SYMBOL)
+            error_message("Improper format for 'let' command.");
+        key = list_first(value)->u.s;
+        value = list_nth(value, 1);
+        dictionary_insert(local_dictionary, key, ref(value));
+    }
+
+    value = eval_progn(local_dictionary, args->u.cons.cdr);
+    dictionary_free(local_dictionary);
+    return value;
+
+}
+
 Object *builtin_defun(Dictionary *dictionary, Object *args) {
     char *name;
 
@@ -437,6 +465,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));
     dictionary_insert(dictionary, "progn", new_special(builtin_progn));
+    dictionary_insert(dictionary, "let", new_special(builtin_let));
     dictionary_insert(dictionary, "defun", new_special(builtin_defun));
     dictionary_insert(dictionary, "if", new_special(builtin_if));
 }
