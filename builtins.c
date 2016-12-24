@@ -208,7 +208,7 @@ Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
     if (list_len(args) < 2)
         error_message("Wrong number of arguments to 'mapcar'.");
     else if (!object_iscallable(list_first(args)))
-        error_message("First argument to 'mapcar' must be callable.");
+        error_message("Argument 1 to 'mapcar' must be callable.");
 
     nlists = (list_len(args) - 1);
     function = list_first(args);
@@ -330,7 +330,7 @@ Object *builtin_def(Dictionary *dictionary, Object *args) {
 
     _args_num("def", args, 2);
     if (list_first(args)->type != SYMBOL)
-        error_message("First argument to 'def' must be symbol.");
+        error_message("Argument 1 to 'def' must be symbol.");
 
     name = list_first(args)->u.s;
     value = eval(dictionary, list_nth(args, 1));
@@ -356,7 +356,7 @@ Object *builtin_let(Dictionary *dictionary, Object *args) {
     if (list_len(args) < 2)
         error_message("Wrong number of arguments to 'let'.");
     else if (!is_list(list_first(args)))
-        error_message("First argument to 'let' must be list.");
+        error_message("Argument 1 to 'let' must be list.");
 
     local_dictionary = dictionary_new(dictionary);
 
@@ -382,9 +382,9 @@ Object *builtin_defun(Dictionary *dictionary, Object *args) {
     if (list_len(args) < 2)
         error_message("Wrong number of arguments to 'defun'.");
     else if (list_first(args)->type != SYMBOL)
-        error_message("First argument to 'defun' must be symbol.");
+        error_message("Argument 1 to 'defun' must be symbol.");
     else if (!is_list(list_nth(args, 1)))
-        error_message("Second argument to 'defun' must be list.");
+        error_message("Argument 2 to 'defun' must be list.");
 
     // TODO: Verify correctness of formatting
     
