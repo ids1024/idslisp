@@ -211,6 +211,60 @@ Object *builtin_map(Dictionary *dictionary, Object *args) {
     return nodes;
 }
 
+Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
+    Object *function, **lists, *list, *node, *value;
+    Object *tmpargs=&NIL_CONST, *lastarg, *results=&NIL_CONST, *lastres;
+    int i, nlists;
+    bool first = true;
+
+    if (list_len(args) < 3)
+        error_message("Wrong number of arguments to 'mapcar'.");
+    else if (!object_iscallable(list_first(args)))
+        error_message("First argument to 'mapcar' must be callable.");
+
+    nlists = (list_len(args) - 1);
+    function = list_first(args);
+
+    lists = malloc(nlists * sizeof(Object*));
+
+    node = args->u.cons.cdr;
+    i = 0;
+    for (list=list_first(node); list!=NULL; list=list_next(&node)) {
+        if (!is_list(list))
+            error_message("Argument to 'mapcar' must be list.");
+        lists[i] = list;
+        i++;
+    }
+
+    for (;;) {
+        tmpargs = &NIL_CONST;
+        for (i=0; i<nlists; i++) {
+            if (first)
+                value = list_first(lists[i]);
+            else
+                value = list_next(&lists[i]);
+
+            if (value == NULL)
+                break;
+            append_node(&tmpargs, &lastarg, ref(value));
+        }
+
+        if (value == NULL) {
+            garbage_collect(tmpargs);
+            break;
+        }
+
+        value = call_function(dictionary, function, tmpargs); 
+        garbage_collect(tmpargs);
+        append_node(&results, &lastres, value);
+        first = false;
+    }
+
+    free(lists);
+
+    return results;
+}
+
 Object *builtin_nth(Dictionary *dictionary, Object *args) {
     Object *value, *list;
     int index;
@@ -372,6 +426,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
     dictionary_insert(dictionary, "eval", new_builtin(builtin_eval));
     dictionary_insert(dictionary, "map", new_builtin(builtin_map));
+    dictionary_insert(dictionary, "mapcar", new_builtin(builtin_mapcar));
     dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
     dictionary_insert(dictionary, "read-line", new_builtin(builtin_read_line));
     dictionary_insert(dictionary, "read", new_builtin(builtin_read));
