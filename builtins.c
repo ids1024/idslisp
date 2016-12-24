@@ -395,7 +395,7 @@ Object *builtin_if(Dictionary *dictionary, Object *args) {
     _args_num("if", args, 3);
 
     condition = eval(dictionary, list_first(args));
-    if (condition != &NIL_CONST)
+    if (to_bool(condition))
         value = eval(dictionary, list_nth(args, 1));
     else
         value = eval(dictionary, list_nth(args, 2));
