@@ -314,7 +314,7 @@ Object *builtin_car(Dictionary *dictionary, Object *args) {
     if (!is_list(list_first(args)))
         error_message("First argument to 'car' must be list.");
 
-    return list_first(args)->u.cons.car;
+    return ref(list_first(args)->u.cons.car);
 }
 
 Object *builtin_cdr(Dictionary *dictionary, Object *args) {
@@ -322,7 +322,7 @@ Object *builtin_cdr(Dictionary *dictionary, Object *args) {
     if (!is_list(list_first(args)))
         error_message("First argument to 'cdr' must be list.");
 
-    return list_first(args)->u.cons.cdr;
+    return ref(list_first(args)->u.cons.cdr);
 }
 
 Object *builtin_def(Dictionary *dictionary, Object *args) {
