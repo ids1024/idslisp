@@ -189,35 +189,13 @@ Object *builtin_eval(Dictionary *dictionary, Object *args) {
     return eval(dictionary, object);
 }
 
-Object *builtin_map(Dictionary *dictionary, Object *args) {
-    Object *function, *value, *item, *itemval, *nodes=&NIL_CONST, *prev, *newargs;
-
-    _args_num("map", args, 2);
-    if (!(object_iscallable(list_first(args))))
-        error_message("First argument to 'map' must be callable.");
-    else if (!is_list(list_nth(args, 1)))
-        error_message("Second argument to 'map' must be list.");
-
-    function = list_first(args);
-
-    item = list_nth(args, 1);
-    for (itemval=list_first(item); itemval!=NULL; itemval=list_next(&item)) {
-        newargs = new_cons(ref(itemval), &NIL_CONST);
-        value = call_function(dictionary, function, newargs); 
-        garbage_collect(newargs);
-        append_node(&nodes, &prev, value);
-    }
-
-    return nodes;
-}
-
 Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
     Object *function, **lists, *list, *node, *value;
     Object *tmpargs=&NIL_CONST, *lastarg, *results=&NIL_CONST, *lastres;
     int i, nlists;
     bool first = true;
 
-    if (list_len(args) < 3)
+    if (list_len(args) < 2)
         error_message("Wrong number of arguments to 'mapcar'.");
     else if (!object_iscallable(list_first(args)))
         error_message("First argument to 'mapcar' must be callable.");
@@ -453,7 +431,6 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
     dictionary_insert(dictionary, "eval", new_builtin(builtin_eval));
-    dictionary_insert(dictionary, "map", new_builtin(builtin_map));
     dictionary_insert(dictionary, "mapcar", new_builtin(builtin_mapcar));
     dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
     dictionary_insert(dictionary, "read-line", new_builtin(builtin_read_line));
