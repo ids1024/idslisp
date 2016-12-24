@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "builtins.h"
 #include "util.h"
@@ -14,13 +15,31 @@ void _args_num(char *name, Object *args, int num) {
         error_message("Wrong number of arguments to '%s'.", name);
 }
 
+void _args_check(char *name, Object *args, int num, ...) {
+    Object *value, *node=args; 
+    va_list vargs;
+    int i=1;
+    Type type;
+
+    _args_num(name, args, num);
+
+    va_start(vargs, num);
+    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+        type = va_arg(vargs, Type);
+        if (object_type(value) != type)
+            error_message("Argument %d to '%s' should be %s, is %s.",
+                    i, name, type_name(type), type_name(object_type(value)));
+        i++;
+    }
+    va_end(vargs);
+}
+
 
 #define _OPERATOR_BUILTIN(operator, args) ({ \
     double dvalue; \
     long int ivalue; \
     bool isdouble=false; \
-    Object *object; \
-    Object *value, *node=args; \
+    Object *object, *value, *node=args; \
     for (value=list_first(node); value!=NULL; value=list_next(&node)) { \
         switch (value->type) { \
             case INT: \
@@ -166,27 +185,18 @@ Object *builtin_list(Dictionary *dictionary, Object *args) {
 Object *builtin_first(Dictionary *dictionary, Object *args) {
     Object *object;
 
-    _args_num("first", args, 1);
+    _args_check("first", args, 1, LIST);
     object = list_first(args);
 
-    if (!is_list(object))
-        error_message("Argument to 'first' must be list.");
-    else if (object == &NIL_CONST)
+    if (object == &NIL_CONST)
         return &NIL_CONST;
     else
         return ref(list_first(object));
 }
 
 Object *builtin_eval(Dictionary *dictionary, Object *args) {
-    Object *object;
-
-    _args_num("eval", args, 1);
-    object = list_first(args);
-
-    if (!is_list(object))
-        error_message("Argument to 'eval' must be list.");
-
-    return eval(dictionary, object);
+    _args_check("eval", args, 1, LIST);
+    return eval(dictionary, list_first(args));
 }
 
 Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
@@ -247,12 +257,7 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
     Object *value, *list;
     int index;
 
-    _args_num("nth", args, 2);
-    if (list_first(args)->type != INT)
-        error_message("First argument to 'nth' must be integer.");
-    else if (!is_list(list_nth(args, 1)))
-        error_message("Second argument to 'nth' must be list.");
-
+    _args_check("nth", args, 2, INT, LIST);
     index = list_first(args)->u.ld;
     list = list_nth(args, 1);
     value = list_nth(list, index);
@@ -310,18 +315,12 @@ Object *builtin_cons(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_car(Dictionary *dictionary, Object *args) {
-    _args_num("car", args, 1);
-    if (!is_list(list_first(args)))
-        error_message("First argument to 'car' must be list.");
-
+    _args_check("car", args, 1, LIST);
     return ref(list_first(args)->u.cons.car);
 }
 
 Object *builtin_cdr(Dictionary *dictionary, Object *args) {
-    _args_num("cdr", args, 1);
-    if (!is_list(list_first(args)))
-        error_message("First argument to 'cdr' must be list.");
-
+    _args_check("cdr", args, 1, LIST);
     return ref(list_first(args)->u.cons.cdr);
 }
 

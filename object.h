@@ -2,7 +2,8 @@
 #define OBJECT_H
 #include <stdbool.h>
 
-typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, CONS, BUILTIN, NIL, SPECIAL, FUNCTION, T} Type;
+// LIST and PAIR are used as return values of object_type for CONS
+typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, CONS, BUILTIN, NIL, SPECIAL, FUNCTION, T, LIST, PAIR} Type;
 
 struct Object_;
 struct Dictionary_;
@@ -53,6 +54,8 @@ bool object_iscallable(Object *object) __attribute__ ((pure));
 bool object_issingleton(Object *object) __attribute__ ((pure));
 void garbage_collect(Object *object);
 void object_print(Object *object);
+Type object_type(Object *object) __attribute__ ((pure));
+char *type_name(Type type) __attribute__ ((pure));
 
 extern Object NIL_CONST;
 extern Object T_CONST;

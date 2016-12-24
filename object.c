@@ -209,5 +209,48 @@ void object_print(Object *object) {
         case T:
             printf("T");
             break;
+        case LIST:
+        case PAIR:
+            abort();
+    }
+}
+
+Type object_type(Object *object) {
+    if (is_list(object))
+        return LIST;
+    else if (object->type == CONS)
+        return PAIR;
+    else
+        return object->type;
+}
+
+char *type_name(Type type) {
+    switch(type) {
+        case INT:
+            return "int";
+        case DOUBLE:
+            return "double";
+        case STRING:
+            return "string";
+        case SYMBOL:
+            return "symbol";
+        case CONS:
+            return "cons";
+        case BUILTIN:
+            return "built-in function";
+        case NIL:
+            return "nil";
+        case SPECIAL:
+            return "built-in special form";
+        case FUNCTION:
+            return "user-defined function";
+        case T:
+            return "T";
+        case LIST:
+            return "list";
+        case PAIR:
+            return "pair";
+        default:
+            abort();
     }
 }
