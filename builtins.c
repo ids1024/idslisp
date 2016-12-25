@@ -335,7 +335,7 @@ Object *builtin_def(Dictionary *dictionary, Object *args) {
     name = list_first(args)->u.s;
     value = eval(dictionary, list_nth(args, 1));
 
-    dictionary_insert(dictionary, name, value);
+    dictionary_insert(dictionary_top(dictionary), name, value);
     return new_symbol(name);
 }
 

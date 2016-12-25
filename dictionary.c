@@ -33,6 +33,12 @@ Object *dictionary_get(Dictionary *dictionary, char *key) {
         return NULL;
 }
 
+Dictionary *dictionary_top(Dictionary *dictionary) {
+    while (dictionary->parent != NULL)
+        dictionary = dictionary->parent;
+    return dictionary;
+}
+
 void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
     _DictionaryEntry *entry;
 
