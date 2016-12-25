@@ -15,16 +15,12 @@
 
 char *read_to_string(FILE *file) {
     // FIXME: performance
-    char *text, next_char;
+    char *text=NULL, next_char;
     int len=0;
 
-    text = malloc(1);
-    while ((next_char = fgetc(file)) != EOF) {
-        len++;
-        text = realloc(text, len+1);
-        text[len-1] = next_char;
-    }
-    text[len] = '\0';
+    while ((next_char = fgetc(file)) != EOF)
+	array_append(text, len, next_char);
+    array_append(text, len, '\0');
 
     return text;
 }

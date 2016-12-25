@@ -93,9 +93,7 @@ Object **parse(char *code, int *nobjects) {
         if (object == NULL)
             error_message("')' with no matching '('");
 
-        (*nobjects)++;
-        objects = realloc(objects, *nobjects * sizeof(Object*));
-        objects[*nobjects-1] = object;
+        array_append(objects, *nobjects, object);
     }
 
     // Free the tokens array
