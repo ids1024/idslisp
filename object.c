@@ -195,13 +195,9 @@ void object_print(Object *object) {
             _print_cons(object);
             break;
         case BUILTIN:
-            printf("<built-in function>");
-            break;
         case SPECIAL:
-            printf("<built-in special form>");
-            break;
         case FUNCTION:
-            printf("<user-defined function>");
+            printf("<%s>", type_name(object->type));
             break;
         case NIL:
             printf("nil");
