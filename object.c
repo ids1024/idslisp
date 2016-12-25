@@ -216,10 +216,8 @@ void object_print(Object *object) {
 }
 
 Type object_type(Object *object) {
-    if (is_list(object))
-        return LIST;
-    else if (object->type == CONS)
-        return PAIR;
+    if (object->type == CONS)
+    	return is_list(object) ? LIST : PAIR;
     else
         return object->type;
 }
