@@ -200,10 +200,8 @@ void object_print(Object *object) {
             printf("<%s>", type_name(object->type));
             break;
         case NIL:
-            printf("nil");
-            break;
         case T:
-            printf("T");
+            printf("%s", type_name(object->type));
             break;
         case LIST:
         case PAIR:
