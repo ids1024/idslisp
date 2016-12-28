@@ -32,6 +32,7 @@ char **tokenize(char *code, int *ntoks) {
         } else if (!instr && isspace(code[i])) {
             _add_token(&tokens, ntoks, &curtok, &len);
         } else if (!instr && (code[i] == '(' || code[i] == ')' ||
+                              code[i] == '[' || code[i] == ']' ||
                               code[i] == '\'')) {
             _add_token(&tokens, ntoks, &curtok, &len);
             array_append(tokens, *ntoks, strndup(code+i, 1));

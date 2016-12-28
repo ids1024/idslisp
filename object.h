@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 // LIST and PAIR are used as return values of object_type for CONS
-typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, CONS, BUILTIN, NIL, SPECIAL, FUNCTION, T, LIST, PAIR} Type;
+typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, CONS, BUILTIN, NIL, SPECIAL, FUNCTION, T, LIST, PAIR, VECTOR} Type;
 
 struct Object_;
 struct Dictionary_;
@@ -22,6 +22,10 @@ typedef struct Object_ {
             struct Object_ *car;
             struct Object_ *cdr;
         } cons;
+        struct {
+            struct Object_ **items;
+            int nitems;
+        } vec;
     } u;
     int refcount;
 } Object;
@@ -45,6 +49,7 @@ Object *new_double(double value);
 Object *new_string(char *value);
 Object *new_symbol(char *value);
 Object *new_cons(Object *car, Object *cdr);
+Object *new_vector(Object **items, int nitems);
 Object *new_function(Object *value);
 Object *new_builtin(BuiltinFunc value);
 Object *new_special(BuiltinFunc value);

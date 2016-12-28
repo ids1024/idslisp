@@ -324,6 +324,20 @@ Object *builtin_cdr(Dictionary *dictionary, Object *args) {
     return ref(list_first(args)->u.cons.cdr);
 }
 
+Object *builtin_vector(Dictionary *dictionary, Object *args) {
+    Object *value, *node=args, **vector;
+    int i=0;
+
+    vector = malloc(list_len(args) * sizeof(Object*));
+
+    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+        vector[i] = ref(value);
+        i++;
+    }
+
+    return new_vector(vector, i);
+}
+
 Object *builtin_def(Dictionary *dictionary, Object *args) {
     char *name;
     Object *value;
@@ -437,6 +451,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "cons", new_builtin(builtin_cons));
     dictionary_insert(dictionary, "car", new_builtin(builtin_car));
     dictionary_insert(dictionary, "cdr", new_builtin(builtin_cdr));
+    dictionary_insert(dictionary, "vector", new_builtin(builtin_vector));
 
     dictionary_insert(dictionary, "def", new_special(builtin_def));
     dictionary_insert(dictionary, "quote", new_special(builtin_quote));

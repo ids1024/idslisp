@@ -42,7 +42,15 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
     } else if (strcmp(tokens[*i], "(") == 0) {
         (*i)++;
         item = _parse_iter(tokens, ntoks, i);
-    } else if (strcmp(tokens[*i], ")") == 0) {
+        if (strcmp(tokens[*i], ")") != 0)
+            error_message("'(' with no matching ')'");
+    } else if (strcmp(tokens[*i], "[") == 0) {
+        (*i)++;
+        item = _parse_iter(tokens, ntoks, i);
+        if (strcmp(tokens[*i], "]") != 0)
+            error_message("'[' with no matching ']'");
+        item = new_cons(new_symbol("vector"), item);
+    } else if (strcmp(tokens[*i], ")") == 0 || strcmp(tokens[*i], "]") == 0) {
         item = NULL;
     } else {
         item = _str_to_num_object(tokens[*i]);
@@ -76,7 +84,7 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
         append_node(&list, &prev_node, item);
     }
 
-    error_message("missing ')'");
+    error_message("'(' with no matching ')'");
 }
 
 Object **parse(char *code, int *nobjects) {

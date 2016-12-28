@@ -96,6 +96,10 @@ Object *new_cons(Object *car, Object *cdr) {
     return _NEW_OBJECT(CONS, cons, {car, cdr});
 }
 
+Object *new_vector(Object **items, int nitems) {
+    return _NEW_OBJECT(VECTOR, vec, {items, nitems});
+}
+
 Object *new_function(Object *value) {
     return _NEW_OBJECT(FUNCTION, obj, value);
 }
@@ -137,6 +141,12 @@ void garbage_collect(Object *object) {
             case CONS:
                 garbage_collect(object->u.cons.car);
                 garbage_collect(object->u.cons.cdr);
+                break;
+            case VECTOR:
+                for (int i=0; i<object->u.vec.nitems; i++) {
+                    garbage_collect(object->u.vec.items[i]);
+                }
+                free(object->u.vec.items);
                 break;
             case FUNCTION:
                 garbage_collect(object->u.obj);
@@ -193,6 +203,15 @@ void object_print(Object *object) {
 	    break;
         case CONS:
             _print_cons(object);
+            break;
+	case VECTOR:
+            printf("[");
+            for (int i=0; i<object->u.vec.nitems; i++) {
+                object_print(object->u.vec.items[i]);
+                if (i+1<object->u.vec.nitems)
+                    printf(" ");
+            }
+            printf("]");
             break;
         case BUILTIN:
         case SPECIAL:
