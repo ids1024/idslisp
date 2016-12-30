@@ -1,3 +1,5 @@
+/** @file */ 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -13,6 +15,9 @@
 #include "dictionary.h"
 #include "builtins.h"
 
+/**
+ * @brief Create string with contents of FILE
+ */
 char *read_to_string(FILE *file) {
     // FIXME: performance
     char *text=NULL, next_char;
@@ -25,6 +30,10 @@ char *read_to_string(FILE *file) {
     return text;
 }
 
+/**
+ * @brief Open file and read to string
+ * @param filename Path to file
+ */
 char *read_file(char *filename) {
     char *text;
     FILE *file;
@@ -37,6 +46,12 @@ char *read_file(char *filename) {
     return text;
 }
 
+/**
+ * @brief Parse and evaluate lisp code
+ * @param dictionary Dictionary to evaluate code in
+ * @param text The lisp code
+ * @param print If true, print return value(s)
+ */
 void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
     Object **objects, *result;
     int nobjects, i;
