@@ -16,6 +16,11 @@ void _args_num(char *name, Object *args, int num) {
         error_message("Wrong number of arguments to '%s'.", name);
 }
 
+void _arg_error(char *func, int n, char *correct, Object *object) {
+    error_message("Argument %d to '%s' should be %s, is %s.",
+            n, func, correct, type_name(object_type(object)));
+}
+
 void _args_check(char *name, Object *args, int num, ...) {
     Object *value;
     va_list vargs;
@@ -30,8 +35,7 @@ void _args_check(char *name, Object *args, int num, ...) {
     while ((value=iter_next(&iter)) != NULL) {
         type = va_arg(vargs, Type);
         if (object_type(value) != type)
-            error_message("Argument %d to '%s' should be %s, is %s.",
-                    i, name, type_name(type), type_name(object_type(value)));
+            _arg_error(name, i, type_name(type), value);
         i++;
     }
     va_end(vargs);
@@ -196,15 +200,14 @@ Object *builtin_list(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_first(Dictionary *dictionary, Object *args) {
-    Object *object;
+    Object *value;
 
-    _args_check("first", args, 1, LIST);
-    object = seq_nth(args, 0);
+    if (!object_isseq(seq_nth(args, 0)))
+        _arg_error("first", 0, "sequence", seq_nth(args, 0));
 
-    if (object == &NIL_CONST)
-        return &NIL_CONST;
-    else
-        return ref(seq_nth(object, 0));
+    value = seq_nth(seq_nth(args, 0), 0);
+
+    return (value == NULL) ? &NIL_CONST : ref(value);
 }
 
 Object *builtin_eval(Dictionary *dictionary, Object *args) {
@@ -265,15 +268,16 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
     Object *value, *list;
     int index;
 
-    _args_check("nth", args, 2, INT, LIST);
+    if (seq_nth(args, 0)->type != INT)
+        _arg_error("nth", 0, "int", seq_nth(args, 0));
+    else if (!object_isseq(seq_nth(args, 1)))
+        _arg_error("nth", 1, "sequence", seq_nth(args, 1));
+
     index = seq_nth(args, 0)->u.ld;
     list = seq_nth(args, 1);
     value = seq_nth(list, index);
-    if (value == NULL) {
-        return &NIL_CONST;
-    } else {
-        return ref(value);
-    }
+
+    return (value == NULL) ? &NIL_CONST : ref(value);
 }
 
 Object *builtin_read_line(Dictionary *dictionary, Object *args) {
