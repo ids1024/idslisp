@@ -2,7 +2,7 @@ GCCARGS = -g -Wall -Werror
 
 all: lisp
 
-lisp: main.o eval.c builtins.o parse.o tokenize.o object.o util.o dictionary.o
+lisp: main.o eval.c builtins.o parse.o tokenize.o sequence.o object.o util.o dictionary.o
 	gcc ${GCCARGS} -lreadline -o $@ $^
 
 main.o: main.c parse.h object.h tokenize.h eval.h util.h
@@ -18,6 +18,9 @@ parse.o: parse.c parse.h object.h tokenize.h
 	gcc ${GCCARGS} -c -o $@ $<
 
 tokenize.o: tokenize.c tokenize.h
+	gcc ${GCCARGS} -c -o $@ $<
+
+sequence.o: sequence.c sequence.h
 	gcc ${GCCARGS} -c -o $@ $<
 
 object.o: object.c object.h

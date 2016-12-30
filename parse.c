@@ -7,6 +7,7 @@
 #include "object.h"
 #include "tokenize.h"
 #include "util.h"
+#include "sequence.h"
 
 
 Object *_parse_iter(char **tokens, int ntoks, int *i);
@@ -68,12 +69,12 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
         item = _parse_one(tokens, ntoks, i);
 
         if (item == NULL) {
-            if (list_len(list) == 3 &&
-                list_nth(list, 1)->type == SYMBOL &&
-                strcmp(list_nth(list, 1)->u.s, ".") == 0) {
+            if (seq_len(list) == 3 &&
+                seq_nth(list, 1)->type == SYMBOL &&
+                strcmp(seq_nth(list, 1)->u.s, ".") == 0) {
                 // Cons (eg. (1 . 2))
-                car = ref(list_first(list));
-                cdr = ref(list_nth(list, 2));
+                car = ref(seq_nth(list, 0));
+                cdr = ref(seq_nth(list, 2));
                 garbage_collect(list);
                 return new_cons(car, cdr);
             }

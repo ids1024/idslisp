@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "object.h"
+#include "sequence.h"
 
 Object NIL_CONST = {NIL};
 Object T_CONST = {T};
@@ -31,49 +32,6 @@ bool is_list(Object *object) {
             (object->u.cons.cdr == &NIL_CONST || \
              object->u.cons.cdr->type == CONS)) || \
            (object == &NIL_CONST));
-}
-
-Object *list_first(Object *object) {
-    assert(is_list(object));
-    return (object == &NIL_CONST) ? NULL : object->u.cons.car;
-}
-
-Object *list_next(Object **object) {
-    Object *value;
-
-    if (*object == NULL)
-        return NULL;
-
-    assert(is_list(*object) && *object != &NIL_CONST);
-    *object = (*object)->u.cons.cdr;
-
-    if (!is_list(*object)) {
-        value = *object;
-        *object = NULL;
-        return value;
-    } else
-        return list_first(*object);
-}
-
-int list_len(Object *nodes) {
-    int count = 0;
-    Object *value, *node=nodes;
-    for (value=list_first(nodes); value!=NULL; value=list_next(&node))
-        count++;
-    return count;
-}
-
-Object *list_nth(Object *nodes, int n) {
-    int index = 0;
-    Object *value, *node=nodes;
-    assert(is_list(node));
-    for (value=list_first(nodes); value!=NULL; value=list_next(&node)) {
-        if (index == n)
-            return value;
-        index++;
-    }
-
-    return NULL;
 }
 
 Object *new_int(long int value) {
@@ -163,16 +121,18 @@ void garbage_collect(Object *object) {
 }
 
 void _print_cons(Object *object) {
-    Object *value, *node;
+    Object *value;
+    Iter iter;
 
     assert(object->type == CONS);
+
     if (is_list(object)) {
         printf("(");
-        node = object;
-        value = list_first(node);
+	iter = seq_iter(object);
+        value = iter_next(&iter);
         while (value != NULL) {
             object_print(value);
-            value = list_next(&node);
+            value = iter_next(&iter);
             if (value != NULL) {
                 printf(" ");
             }
@@ -261,7 +221,9 @@ char *type_name(Type type) {
             return "list";
         case PAIR:
             return "pair";
-        default:
-            abort();
+	case VECTOR:
+	    return "vector";
+	default:
+	    abort();
     }
 }

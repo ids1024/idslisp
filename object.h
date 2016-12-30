@@ -40,10 +40,6 @@ typedef struct Object_ {
 
 void append_node(Object **list, Object **prev, Object *value);
 bool is_list(Object *object);
-Object *list_first(Object *object) __attribute__ ((pure));
-Object *list_next(Object **object);
-int list_len(Object *nodes) __attribute__ ((pure));
-Object *list_nth(Object *nodes, int n) __attribute__ ((pure));
 Object *new_int(long int value);
 Object *new_double(double value);
 Object *new_string(char *value);

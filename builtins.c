@@ -8,23 +8,26 @@
 #include "eval.h"
 #include "parse.h"
 #include "dictionary.h"
+#include "sequence.h"
 
 
 void _args_num(char *name, Object *args, int num) {
-    if (list_len(args) != num)
+    if (seq_len(args) != num)
         error_message("Wrong number of arguments to '%s'.", name);
 }
 
 void _args_check(char *name, Object *args, int num, ...) {
-    Object *value, *node=args; 
+    Object *value;
     va_list vargs;
     int i=1;
     Type type;
+    Iter iter;
 
     _args_num(name, args, num);
 
     va_start(vargs, num);
-    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+    iter = seq_iter(args);
+    while ((value=iter_next(&iter)) != NULL) {
         type = va_arg(vargs, Type);
         if (object_type(value) != type)
             error_message("Argument %d to '%s' should be %s, is %s.",
@@ -38,12 +41,13 @@ void _args_check(char *name, Object *args, int num, ...) {
 #define _OPERATOR_BUILTIN(operator, args) ({ \
     double dvalue; \
     long int ivalue; \
-    bool isdouble=false; \
-    Object *object, *value, *node=args; \
-    for (value=list_first(node); value!=NULL; value=list_next(&node)) { \
+    bool isdouble=false, first=true; \
+    Object *object, *value; \
+    Iter iter = seq_iter(args); \
+    while ((value=iter_next(&iter)) != NULL) { \
         switch (value->type) { \
             case INT: \
-                if (node == args) \
+                if (first) \
                     dvalue = ivalue = value->u.ld; \
                 else { \
                     dvalue operator value->u.ld; \
@@ -52,7 +56,7 @@ void _args_check(char *name, Object *args, int num, ...) {
                 break; \
             case DOUBLE: \
                 isdouble = true; \
-                if (node == args) \
+                if (first) \
                     dvalue = value->u.lf; \
                 else \
                     dvalue operator value->u.lf; \
@@ -60,6 +64,7 @@ void _args_check(char *name, Object *args, int num, ...) {
             default: \
                 error_message("Invalid argument"); \
         } \
+        first = false; \
     } \
     \
     if (isdouble) \
@@ -72,12 +77,15 @@ void _args_check(char *name, Object *args, int num, ...) {
 #define _COMPARISON_BUILTIN(operator, args) ({ \
     double num, newnum; \
     bool result=true; \
-    Object *value, *node=args; \
+    Object *value; \
+    Iter iter; \
+    bool first = true; \
     \
-    if (list_len(args) < 1) \
+    if (seq_len(args) < 1) \
         error_message("Wrong number of arguments."); \
     \
-    for (value=list_first(node); value!=NULL; value=list_next(&node)) { \
+    iter = seq_iter(args); \
+    while ((value=iter_next(&iter)) != NULL) { \
         switch (value->type) { \
             case INT: \
                 newnum = value->u.ld; \
@@ -88,8 +96,10 @@ void _args_check(char *name, Object *args, int num, ...) {
             default: \
                 error_message("Invalid argument"); \
         } \
-        if (node == args) \
+        if (first) { \
             num = newnum; \
+            first = false; \
+        } \
         else if (!(num operator newnum)) \
             result = false; \
     } \
@@ -135,12 +145,13 @@ Object *builtin_less_equal(Dictionary *dictionary, Object *args) {
 
 Object *builtin_not(Dictionary *dictionary, Object *args) {
     _args_num("not", args, 1);
-    return from_bool(!to_bool(list_first(args)));
+    return from_bool(!to_bool(seq_nth(args, 0)));
 }
 
 Object *builtin_or(Dictionary *dictionary, Object *args) {
-    Object *value, *node=args;
-    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+    Object *value;
+    Iter iter = seq_iter(args);
+    while ((value=iter_next(&iter)) != NULL) {
         if (to_bool(value))
             return ref(value);
     }
@@ -148,8 +159,9 @@ Object *builtin_or(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_and(Dictionary *dictionary, Object *args) {
-    Object *value, *node=args;
-    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+    Object *value;
+    Iter iter = seq_iter(args);
+    while ((value=iter_next(&iter)) != NULL) {
         if (!to_bool(value))
             return ref(value);
     }
@@ -157,15 +169,16 @@ Object *builtin_and(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_print(Dictionary *dictionary, Object *args) {
-    Object *value, *node=args;
-    value=list_first(node);
+    Object *value;
+    Iter iter = seq_iter(args);
+    value = iter_next(&iter);
     while (value != NULL) {
         if (value->type == STRING)
             printf("%s", value->u.s);
         else
             object_print(value);
 
-        value = list_next(&node);
+        value = iter_next(&iter);
         if (value != NULL)
             printf(" ");
     }
@@ -186,52 +199,48 @@ Object *builtin_first(Dictionary *dictionary, Object *args) {
     Object *object;
 
     _args_check("first", args, 1, LIST);
-    object = list_first(args);
+    object = seq_nth(args, 0);
 
     if (object == &NIL_CONST)
         return &NIL_CONST;
     else
-        return ref(list_first(object));
+        return ref(seq_nth(object, 0));
 }
 
 Object *builtin_eval(Dictionary *dictionary, Object *args) {
     _args_check("eval", args, 1, LIST);
-    return eval(dictionary, list_first(args));
+    return eval(dictionary, seq_nth(args, 0));
 }
 
 Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
-    Object *function, **lists, *list, *node, *value;
+    Object *function, *value;
     Object *tmpargs=&NIL_CONST, *lastarg, *results=&NIL_CONST, *lastres;
     int i, nlists;
-    bool first = true;
+    Iter iter, *lists;
 
-    if (list_len(args) < 2)
+    if (seq_len(args) < 2)
         error_message("Wrong number of arguments to 'mapcar'.");
-    else if (!object_iscallable(list_first(args)))
+    else if (!object_iscallable(seq_nth(args, 0)))
         error_message("Argument 1 to 'mapcar' must be callable.");
 
-    nlists = (list_len(args) - 1);
-    function = list_first(args);
+    nlists = (seq_len(args) - 1);
+    function = seq_nth(args, 0);
 
-    lists = malloc(nlists * sizeof(Object*));
+    lists = malloc(nlists * sizeof(Iter));
 
-    node = args->u.cons.cdr;
     i = 0;
-    for (list=list_first(node); list!=NULL; list=list_next(&node)) {
-        if (!is_list(list))
+    iter = seq_iter(args);
+    while ((value=iter_next(&iter)) != NULL) {
+        if (!is_list(value))
             error_message("Argument to 'mapcar' must be list.");
-        lists[i] = list;
+        lists[i] = seq_iter(value);
         i++;
     }
 
     for (;;) {
         tmpargs = &NIL_CONST;
         for (i=0; i<nlists; i++) {
-            if (first)
-                value = list_first(lists[i]);
-            else
-                value = list_next(&lists[i]);
-
+            value = iter_next(&lists[i]);
             if (value == NULL)
                 break;
             append_node(&tmpargs, &lastarg, ref(value));
@@ -245,7 +254,6 @@ Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
         value = call_function(dictionary, function, tmpargs); 
         garbage_collect(tmpargs);
         append_node(&results, &lastres, value);
-        first = false;
     }
 
     free(lists);
@@ -258,9 +266,9 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
     int index;
 
     _args_check("nth", args, 2, INT, LIST);
-    index = list_first(args)->u.ld;
-    list = list_nth(args, 1);
-    value = list_nth(list, index);
+    index = seq_nth(args, 0)->u.ld;
+    list = seq_nth(args, 1);
+    value = seq_nth(list, index);
     if (value == NULL) {
         return &NIL_CONST;
     } else {
@@ -309,28 +317,30 @@ Object *builtin_cons(Dictionary *dictionary, Object *args) {
     Object *car, *cdr;
 
     _args_num("cons", args, 2);
-    car = list_first(args);
-    cdr = list_nth(args, 1);
+    car = seq_nth(args, 0);
+    cdr = seq_nth(args, 1);
     return new_cons(ref(car), ref(cdr));
 }
 
 Object *builtin_car(Dictionary *dictionary, Object *args) {
     _args_check("car", args, 1, LIST);
-    return ref(list_first(args)->u.cons.car);
+    return ref(seq_nth(args, 0)->u.cons.car);
 }
 
 Object *builtin_cdr(Dictionary *dictionary, Object *args) {
     _args_check("cdr", args, 1, LIST);
-    return ref(list_first(args)->u.cons.cdr);
+    return ref(seq_nth(args, 0)->u.cons.cdr);
 }
 
 Object *builtin_vector(Dictionary *dictionary, Object *args) {
-    Object *value, *node=args, **vector;
+    Object *value, **vector;
     int i=0;
+    Iter iter;
 
-    vector = malloc(list_len(args) * sizeof(Object*));
+    vector = malloc(seq_len(args) * sizeof(Object*));
 
-    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
+    iter = seq_iter(args);
+    while ((value=iter_next(&iter)) != NULL) {
         vector[i] = ref(value);
         i++;
     }
@@ -343,11 +353,11 @@ Object *builtin_def(Dictionary *dictionary, Object *args) {
     Object *value;
 
     _args_num("def", args, 2);
-    if (list_first(args)->type != SYMBOL)
+    if (seq_nth(args, 0)->type != SYMBOL)
         error_message("Argument 1 to 'def' must be symbol.");
 
-    name = list_first(args)->u.s;
-    value = eval(dictionary, list_nth(args, 1));
+    name = seq_nth(args, 0)->u.s;
+    value = eval(dictionary, seq_nth(args, 1));
 
     dictionary_insert(dictionary_top(dictionary), name, value);
     return new_symbol(name);
@@ -355,7 +365,7 @@ Object *builtin_def(Dictionary *dictionary, Object *args) {
 
 Object *builtin_quote(Dictionary *dictionary, Object *args) {
     _args_num("quote", args, 1);
-    return ref(list_first(args));
+    return ref(seq_nth(args, 0));
 }
 
 Object *builtin_progn(Dictionary *dictionary, Object *args) {
@@ -364,23 +374,24 @@ Object *builtin_progn(Dictionary *dictionary, Object *args) {
 
 Object *builtin_let(Dictionary *dictionary, Object *args) {
     Dictionary *local_dictionary;
-    Object *value, *node;
+    Object *value;
     char *key;
+    Iter iter;
 
-    if (list_len(args) < 2)
+    if (seq_len(args) < 2)
         error_message("Wrong number of arguments to 'let'.");
-    else if (!is_list(list_first(args)))
+    else if (!is_list(seq_nth(args, 0)))
         error_message("Argument 1 to 'let' must be list.");
 
     local_dictionary = dictionary_new(dictionary);
 
-    node = list_first(args);
-    for (value=list_first(node); value!=NULL; value=list_next(&node)) {
-        if (!is_list(value) || list_len(value) != 2 || 
-            list_first(value)->type != SYMBOL)
+    iter = seq_iter(args);
+    while ((value=iter_next(&iter)) != NULL) {
+        if (!is_list(value) || seq_len(value) != 2 || 
+            seq_nth(value, 0)->type != SYMBOL)
             error_message("Improper format for 'let' command.");
-        key = list_first(value)->u.s;
-        value = list_nth(value, 1);
+        key = seq_nth(value, 0)->u.s;
+        value = seq_nth(value, 1);
         dictionary_insert(local_dictionary, key, ref(value));
     }
 
@@ -393,16 +404,16 @@ Object *builtin_let(Dictionary *dictionary, Object *args) {
 Object *builtin_defun(Dictionary *dictionary, Object *args) {
     char *name;
 
-    if (list_len(args) < 2)
+    if (seq_len(args) < 2)
         error_message("Wrong number of arguments to 'defun'.");
-    else if (list_first(args)->type != SYMBOL)
+    else if (seq_nth(args, 0)->type != SYMBOL)
         error_message("Argument 1 to 'defun' must be symbol.");
-    else if (!is_list(list_nth(args, 1)))
+    else if (!is_list(seq_nth(args, 1)))
         error_message("Argument 2 to 'defun' must be list.");
 
     // TODO: Verify correctness of formatting
     
-    name = list_first(args)->u.s;
+    name = seq_nth(args, 0)->u.s;
     // TODO: Better API here? 
     dictionary_insert(dictionary, name, new_function(ref(args->u.cons.cdr)));
     return new_symbol(name);
@@ -413,11 +424,11 @@ Object *builtin_if(Dictionary *dictionary, Object *args) {
 
     _args_num("if", args, 3);
 
-    condition = eval(dictionary, list_first(args));
+    condition = eval(dictionary, seq_nth(args, 0));
     if (to_bool(condition))
-        value = eval(dictionary, list_nth(args, 1));
+        value = eval(dictionary, seq_nth(args, 1));
     else
-        value = eval(dictionary, list_nth(args, 2));
+        value = eval(dictionary, seq_nth(args, 2));
     garbage_collect(condition);
 
     return value;
