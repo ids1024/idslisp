@@ -4,10 +4,16 @@
 
 #include "sequence.h"
 
+/**
+ * @brief Returns true if object is a sequence
+ */
 bool object_isseq(Object *object) {
     return is_list(object) || object->type == VECTOR || object->type == STRING;
 }
 
+/**
+ * @brief Creates iterator from sequence
+ */
 Iter seq_iter(Object *object) {
     assert(object_isseq(object));
     if (is_list(object))
@@ -42,6 +48,9 @@ Object *_list_next(Object **object) {
         return _list_first(*object);
 }
 
+/**
+ * @brief Gets the next value from an iterator
+ */
 Object *iter_next(Iter *iter) {
     Object *value;
     char character;
@@ -76,6 +85,9 @@ Object *iter_next(Iter *iter) {
     return value;
 }
 
+/**
+ * @brief Returns the length of a sequence
+ */
 int seq_len(Object *object) {
     int count = 0;
     Object *value;
@@ -94,6 +106,9 @@ int seq_len(Object *object) {
     return count;
 }
 
+/**
+ * @brief Returns the nth element of a sequence
+ */
 Object *seq_nth(Object *object, int n) {
     int index = 0;
     Object *value;

@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Functions for handling sequences (lists, vectors, etc.)
+ */
+
 #ifndef SEQUENCE_H
 #define SEQUENCE_H
 
@@ -6,8 +11,14 @@
 
 typedef enum IterType_ {ITERLIST, ITERVECTOR, ITERSTRING} IterType;
 
+/**
+ * @brief Iterator
+ *
+ * Generically represents sequence and position in sequence, allowing for
+ * iteration.
+ */
 typedef struct Iter_ {
-    IterType type;
+    IterType type; ///< Type of iterated object
     union {
         struct {
             Object *node;
