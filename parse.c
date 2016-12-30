@@ -36,6 +36,10 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
         assert((ntoks >= *i+3) && (strcmp(tokens[*i+2], "\"") == 0));
         item = new_string(tokens[*i+1]);
         (*i) += 2;
+    } else if (strncmp(tokens[*i], "\\", 1) == 0) {
+        if (strlen(tokens[*i]) != 2)
+            error_message("Invalid character.");
+        item = new_character(tokens[*i][1]);
     } else if (strcmp(tokens[*i], "'") == 0) {
         (*i)++;
         item = new_cons(_parse_one(tokens, ntoks, i), &NIL_CONST);

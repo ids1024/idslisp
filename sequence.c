@@ -1,10 +1,11 @@
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "sequence.h"
 
 bool object_isseq(Object *object) {
-    return is_list(object) || object->type == VECTOR;
+    return is_list(object) || object->type == VECTOR || object->type == STRING;
 }
 
 Iter seq_iter(Object *object) {
@@ -13,6 +14,8 @@ Iter seq_iter(Object *object) {
         return (Iter){ITERLIST, {.list = {object, true}}};
     else if (object->type == VECTOR)
         return (Iter){ITERVECTOR, {.vec = {object, 0}}};
+    else if (object->type == STRING)
+        return (Iter){ITERSTRING, {.vec = {object, 0}}};
     else
         abort();
 }
@@ -41,6 +44,7 @@ Object *_list_next(Object **object) {
 
 Object *iter_next(Iter *iter) {
     Object *value;
+    char character;
 
     switch (iter->type) {
         case ITERLIST:
@@ -58,6 +62,15 @@ Object *iter_next(Iter *iter) {
                 iter->u.vec.index++;
             }
             break;
+        case ITERSTRING:
+            character = iter->u.vec.object->u.s[iter->u.vec.index];
+            if (character == '\0')
+                value = NULL;
+            else {
+                value = new_character(character);
+                iter->u.vec.index++;
+            }
+            break;
     }
 
     return value;
@@ -70,6 +83,8 @@ int seq_len(Object *object) {
 
     if (object->type == VECTOR)
         count = object->u.vec.nitems;
+    else if (object->type == STRING)
+        count = strlen(object->u.s);
     else {
         iter = seq_iter(object);
         while ((value=iter_next(&iter)) != NULL)
@@ -89,6 +104,9 @@ Object *seq_nth(Object *object, int n) {
     if (object->type == VECTOR) {
         if (object->u.vec.nitems > n)
             return object->u.vec.items[n];
+    } else if (object->type == STRING) {
+        if (strlen(object->u.s) > n)
+            return new_character(object->u.s[n]);
     } else {
         iter = seq_iter(object);
         while ((value=iter_next(&iter)) != NULL) {

@@ -46,6 +46,10 @@ Object *new_string(char *value) {
     return _NEW_OBJECT(STRING, s, strdup(value));
 }
 
+Object *new_character(char character) {
+    return _NEW_OBJECT(CHARACTER, c, character);
+}
+
 Object *new_symbol(char *value) {
     return _NEW_OBJECT(SYMBOL, s, strdup(value));
 }
@@ -162,6 +166,9 @@ void object_print(Object *object) {
 	case STRING:
             printf("\"%s\"", object->u.s);
 	    break;
+        case CHARACTER:
+            printf("\\%c", object->u.c);
+            break;
         case SYMBOL:
             printf("%s", object->u.s);
 	    break;

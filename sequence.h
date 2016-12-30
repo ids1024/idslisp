@@ -4,7 +4,7 @@
 #include "object.h"
 
 
-typedef enum IterType_ {ITERLIST, ITERVECTOR} IterType;
+typedef enum IterType_ {ITERLIST, ITERVECTOR, ITERSTRING} IterType;
 
 typedef struct Iter_ {
     IterType type;
