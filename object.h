@@ -1,3 +1,5 @@
+/** @file */ 
+
 #ifndef OBJECT_H
 #define OBJECT_H
 #include <stdbool.h>
@@ -10,27 +12,33 @@ struct Dictionary_;
 
 typedef struct Object_* (*BuiltinFunc)(struct Dictionary_*, struct Object_*);
 
+/**
+ * @brief Lisp object
+ */
 typedef struct Object_ {
-    Type type;
+    Type type; ///< Type of object
     union {
-        long int ld;
-        double lf;
-        char *s;
-        char c;
-        BuiltinFunc builtin;
-        struct Object_ *obj;
+        long int ld; ///< Integer
+        double lf; ///< Double
+        char *s;  ///< String
+        char c; ///< Character
+        BuiltinFunc builtin; ///< Builtin function
+        struct Object_ *obj; ///< Object (used for user function)
         struct {
             struct Object_ *car;
             struct Object_ *cdr;
-        } cons;
+        } cons; ///< Cons cell
         struct {
             struct Object_ **items;
             int nitems;
-        } vec;
-    } u;
-    int refcount;
+        } vec; ///< Vector
+    } u; ///< Value union
+    int refcount; ///< Reference count (for garbage collection)
 } Object;
 
+/**
+ * @brief Passes object through while incrementing reference count
+ */
 #define ref(obj) ({ \
     Object *_obj = obj; \
     if (_obj != NULL) \

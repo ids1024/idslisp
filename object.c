@@ -6,8 +6,8 @@
 #include "object.h"
 #include "sequence.h"
 
-Object NIL_CONST = {NIL};
-Object T_CONST = {T};
+Object NIL_CONST = {NIL}; ///< Global nil object
+Object T_CONST = {T}; ///< Global T object
 
 #define _NEW_OBJECT(typename, utype, ...) ({ \
         Object *object = malloc(sizeof(Object)); \
@@ -15,7 +15,12 @@ Object T_CONST = {T};
         object; \
     })
 
-
+/**
+ * @brief Append to linked list
+ * @param list Pointer to list to update
+ * @param prev Pointer to previous node pointer
+ * @param value Value to append
+ */
 void append_node(Object **list, Object **prev, Object *value) {
     Object *node = new_cons(value, &NIL_CONST);
     if (*list == &NIL_CONST)
@@ -27,6 +32,9 @@ void append_node(Object **list, Object **prev, Object *value) {
     *prev = node;
 }
 
+/**
+ * @brief Returns true if object is a list
+ */
 bool is_list(Object *object) {
     return(((object->type == CONS) && \
             (object->u.cons.cdr == &NIL_CONST || \
@@ -87,10 +95,22 @@ bool object_iscallable(Object *object) {
             object->type == SPECIAL);
 }
 
+/**
+ * @brief Returns true if object is singleton
+ *
+ * Currently only nil and T are singletons.
+ */
 bool object_issingleton(Object *object) {
     return (object == &NIL_CONST || object == &T_CONST);
 }
 
+/**
+ * @brief Garbage collect object
+ *
+ * This decrements the objects reference counter, and if no other references
+ * to the object remain, frees it and garbage collects all objects referenced
+ * by it.
+ */
 void garbage_collect(Object *object) {
     if (object_issingleton(object))
         return;
