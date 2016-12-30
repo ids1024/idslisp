@@ -20,10 +20,10 @@ typedef struct Iter_ {
     } u;
 } Iter;
 
-bool object_isseq(Object *object);
+bool object_isseq(Object *object) __attribute__ ((pure));
 Iter seq_iter(Object *object);
 Object *iter_next(Iter *iter);
-int seq_len(Object *object);
-Object *seq_nth(Object *object, int n);
+int seq_len(Object *object) __attribute__ ((pure));
+Object *seq_nth(Object *object, int n) __attribute__ ((pure));
 
 #endif
