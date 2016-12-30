@@ -435,13 +435,16 @@ Object *builtin_defun(Dictionary *dictionary, Object *args) {
 Object *builtin_if(Dictionary *dictionary, Object *args) {
     Object *condition, *value;
 
-    _args_num("if", args, 3);
+    if (seq_len(args) > 3 || seq_len(args) < 2)
+        error_message("Wrong number of arguments to 'if'.");
 
     condition = eval(dictionary, seq_nth(args, 0));
     if (to_bool(condition))
         value = eval(dictionary, seq_nth(args, 1));
-    else
+    else if (seq_len(args) == 3)
         value = eval(dictionary, seq_nth(args, 2));
+    else
+        value = &NIL_CONST;
     garbage_collect(condition);
 
     return value;
