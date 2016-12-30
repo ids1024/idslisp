@@ -10,7 +10,7 @@
 #include "dictionary.h"
 #include "sequence.h"
 
-Object *eval_list(Dictionary *dictionary, Object *object);
+Object *_eval_list(Dictionary *dictionary, Object *object);
 
 Object *eval(Dictionary *dictionary, Object *arg) {
     Object *value;
@@ -21,7 +21,7 @@ Object *eval(Dictionary *dictionary, Object *arg) {
             error_message("'%s' undefined.", arg->u.s);
     } else if (is_list(arg)) {
         // Replace list with what it evluates to
-        value = eval_list(dictionary, arg);
+        value = _eval_list(dictionary, arg);
     } else {
         value = ref(arg);
     }
@@ -71,7 +71,7 @@ Object *call_user_function(Dictionary *dictionary, Object *function, Object *arg
     return value;
 }
 
-Object *eval_list(Dictionary *dictionary, Object *object) {
+Object *_eval_list(Dictionary *dictionary, Object *object) {
     char *command;
     Object *args, *function;
 
