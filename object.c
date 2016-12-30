@@ -82,14 +82,23 @@ Object *new_special(BuiltinFunc value) {
     return _NEW_OBJECT(SPECIAL, builtin, value);
 }
 
+/**
+ * @brief Converts c boolean to lisp object
+ */
 Object *from_bool(bool value) {
     return (value) ? &T_CONST : &NIL_CONST;
 }
 
+/**
+ * @brief Converts lisp object to C boolean
+ */
 bool to_bool(Object *value) {
     return (value != &NIL_CONST);
 }
 
+/**
+ * @brief Returns true if object is callable
+ */
 bool object_iscallable(Object *object) {
     return (object->type == BUILTIN || object->type == FUNCTION || \
             object->type == SPECIAL);
@@ -175,6 +184,9 @@ void _print_cons(Object *object) {
     printf(")");
 }
 
+/**
+ * @brief Prints an object
+ */
 void object_print(Object *object) {
     switch (object->type) {
         case INT:
