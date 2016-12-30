@@ -210,6 +210,13 @@ Object *builtin_first(Dictionary *dictionary, Object *args) {
     return (value == NULL) ? &NIL_CONST : ref(value);
 }
 
+Object *builtin_count(Dictionary *dictionary, Object *args) {
+    if (!object_isseq(seq_nth(args, 0)))
+        _arg_error("count", 0, "sequence", seq_nth(args, 0));
+
+    return new_int(seq_len(seq_nth(args, 0)));
+}
+
 Object *builtin_eval(Dictionary *dictionary, Object *args) {
     _args_check("eval", args, 1, LIST);
     return eval(dictionary, seq_nth(args, 0));
@@ -460,6 +467,7 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "println", new_builtin(builtin_println));
     dictionary_insert(dictionary, "list", new_builtin(builtin_list));
     dictionary_insert(dictionary, "first", new_builtin(builtin_first));
+    dictionary_insert(dictionary, "count", new_builtin(builtin_count));
     dictionary_insert(dictionary, "eval", new_builtin(builtin_eval));
     dictionary_insert(dictionary, "mapcar", new_builtin(builtin_mapcar));
     dictionary_insert(dictionary, "nth", new_builtin(builtin_nth));
