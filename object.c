@@ -140,17 +140,15 @@ void _print_seq(Object *object) {
 void _print_cons(Object *object) {
     assert(object->type == CONS);
 
+    printf("(");
     if (is_list(object)) {
-        printf("(");
         _print_seq(object);
-        printf(")");
     } else {
-        printf("(");
         object_print(object->u.cons.car);
         printf(" . ");
         object_print(object->u.cons.cdr);
-        printf(")");
     }
+    printf(")");
 }
 
 void object_print(Object *object) {
