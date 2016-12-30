@@ -120,23 +120,29 @@ void garbage_collect(Object *object) {
     }
 }
 
-void _print_cons(Object *object) {
+void _print_seq(Object *object) {
     Object *value;
     Iter iter;
 
+    assert(object_isseq(object));
+
+    iter = seq_iter(object);
+    value = iter_next(&iter);
+    while (value != NULL) {
+        object_print(value);
+        value = iter_next(&iter);
+        if (value != NULL) {
+            printf(" ");
+        }
+    }
+}
+
+void _print_cons(Object *object) {
     assert(object->type == CONS);
 
     if (is_list(object)) {
         printf("(");
-	iter = seq_iter(object);
-        value = iter_next(&iter);
-        while (value != NULL) {
-            object_print(value);
-            value = iter_next(&iter);
-            if (value != NULL) {
-                printf(" ");
-            }
-        }
+        _print_seq(object);
         printf(")");
     } else {
         printf("(");
@@ -166,11 +172,7 @@ void object_print(Object *object) {
             break;
 	case VECTOR:
             printf("[");
-            for (int i=0; i<object->u.vec.nitems; i++) {
-                object_print(object->u.vec.items[i]);
-                if (i+1<object->u.vec.nitems)
-                    printf(" ");
-            }
+            _print_seq(object);
             printf("]");
             break;
         case BUILTIN:
