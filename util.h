@@ -7,9 +7,10 @@ extern jmp_buf error_jmp_buf;
 
 void error_message(char *format, ...) __attribute__ ((noreturn));
 
-#define array_append(items, nitems, value) \
+#define array_append(items, nitems, value) ({ \
     (nitems)++; \
     items = realloc(items, (nitems) * sizeof(value)); \
-    (items)[nitems-1] = value;
+    (items)[nitems-1] = value; \
+})
 
 #endif
