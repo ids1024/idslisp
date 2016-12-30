@@ -84,6 +84,8 @@ Object *seq_nth(Object *object, int n) {
     Object *value;
     Iter iter;
 
+    assert(n >= 0);
+
     if (object->type == VECTOR) {
         if (object->u.vec.nitems > n)
             return object->u.vec.items[n];

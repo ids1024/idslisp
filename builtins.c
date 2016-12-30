@@ -274,6 +274,8 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
         _arg_error("nth", 1, "sequence", seq_nth(args, 1));
 
     index = seq_nth(args, 0)->u.ld;
+    if (index < 0)
+        error_message("Cannot have negative index.");
     list = seq_nth(args, 1);
     value = seq_nth(list, index);
 
