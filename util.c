@@ -5,8 +5,11 @@
 
 #include "util.h"
 
-jmp_buf error_jmp_buf;
+jmp_buf error_jmp_buf; ///< Stores destination for error longjmp
 
+/**
+ * @brief Prints error message and longjmps to handler
+ */
 void error_message(char *format, ...) {
     va_list args;
 
