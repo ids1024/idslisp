@@ -452,7 +452,7 @@ Object *builtin_if(Dictionary *dictionary, Object *args) {
 
 Object *builtin_for(Dictionary *dictionary, Object *args) {
     Dictionary *local_dictionary;
-    Object *value, *item;
+    Object *item, *value, *list=&NIL_CONST, *prev;
     char *key;
     Iter iter;
 
@@ -469,16 +469,16 @@ Object *builtin_for(Dictionary *dictionary, Object *args) {
     iter = seq_iter(eval(dictionary, seq_nth(seq_nth(args, 0), 1)));
     local_dictionary = dictionary_new(dictionary);
 
-    value = &NIL_CONST;
     while ((item=iter_next(&iter)) != NULL) {
         garbage_collect(value);
         dictionary_insert(local_dictionary, key, ref(item));
         value = eval_progn(local_dictionary, args->u.cons.cdr);
+        append_node(&list, &prev, value);
     }
 
     dictionary_free(local_dictionary);
 
-    return value;
+    return list;
 }
  
 void builtins_load(Dictionary *dictionary) {
