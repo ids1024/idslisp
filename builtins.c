@@ -450,6 +450,37 @@ Object *builtin_if(Dictionary *dictionary, Object *args) {
     return value;
 }
 
+Object *builtin_for(Dictionary *dictionary, Object *args) {
+    Dictionary *local_dictionary;
+    Object *value, *item;
+    char *key;
+    Iter iter;
+
+    if (seq_len(args) < 2)
+        error_message("Wrong number of arguments to 'for'.");
+    else if (!object_isseq(seq_nth(args, 0)))
+        _arg_error("for", 0, "sequence", seq_nth(args, 0));
+    else if (seq_len(seq_nth(args, 0)) != 2 ||
+             seq_nth(seq_nth(args, 0), 0)->type != SYMBOL ||
+             !object_isseq(seq_nth(seq_nth(args, 0), 1)))
+        error_message("First argument to 'for' has improper format.");
+
+    key = seq_nth(seq_nth(args, 0), 0)->u.s;
+    iter = seq_iter(eval(dictionary, seq_nth(seq_nth(args, 0), 1)));
+    local_dictionary = dictionary_new(dictionary);
+
+    value = &NIL_CONST;
+    while ((item=iter_next(&iter)) != NULL) {
+        garbage_collect(value);
+        dictionary_insert(local_dictionary, key, ref(item));
+        value = eval_progn(local_dictionary, args->u.cons.cdr);
+    }
+
+    dictionary_free(local_dictionary);
+
+    return value;
+}
+ 
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "nil", &NIL_CONST);
     dictionary_insert(dictionary, "T", &T_CONST);
@@ -487,4 +518,5 @@ void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "let", new_special(builtin_let));
     dictionary_insert(dictionary, "defun", new_special(builtin_defun));
     dictionary_insert(dictionary, "if", new_special(builtin_if));
+    dictionary_insert(dictionary, "for", new_special(builtin_for));
 }
