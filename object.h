@@ -4,12 +4,27 @@
 #define OBJECT_H
 #include <stdbool.h>
 
-// LIST and PAIR are used as return values of object_type for CONS
-typedef enum Type_ {INT, DOUBLE, STRING, SYMBOL, CONS, BUILTIN, NIL, SPECIAL, FUNCTION, T, LIST, PAIR, VECTOR, CHARACTER} Type;
+typedef enum Type_ {
+    INT,
+    DOUBLE,
+    STRING,
+    SYMBOL,
+    CONS,
+    BUILTIN,
+    NIL,
+    SPECIAL,
+    FUNCTION,
+    T,
+    VECTOR,
+    CHARACTER,
+    LIST, ///< Used as return value to object_type() for CONS
+    PAIR, ///< Used as return value to object_type() for CONS
+} Type;
 
 struct Object_;
 struct Dictionary_;
 
+/// @brief Builtin function
 typedef struct Object_* (*BuiltinFunc)(struct Dictionary_*, struct Object_*);
 
 /**

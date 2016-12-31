@@ -92,6 +92,11 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
     error_message("'(' with no matching ')'");
 }
 
+/**
+ * @brief Parses source code to objects
+ * @param code Source code to parse
+ * @param nobjects Number of objects read will be written here
+ */
 Object **parse(char *code, int *nobjects) {
     int ntoks, i;
     char **tokens;
