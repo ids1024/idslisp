@@ -452,7 +452,7 @@ Object *builtin_if(Dictionary *dictionary, Object *args) {
 
 Object *builtin_for(Dictionary *dictionary, Object *args) {
     Dictionary *local_dictionary;
-    Object *item, *value, *list=&NIL_CONST, *prev;
+    Object *inlist, *item, *value, *list=&NIL_CONST, *prev;
     char *key;
     Iter iter;
 
@@ -466,7 +466,8 @@ Object *builtin_for(Dictionary *dictionary, Object *args) {
         error_message("First argument to 'for' has improper format.");
 
     key = seq_nth(seq_nth(args, 0), 0)->u.s;
-    iter = seq_iter(eval(dictionary, seq_nth(seq_nth(args, 0), 1)));
+    inlist = eval(dictionary, seq_nth(seq_nth(args, 0), 1));
+    iter = seq_iter(inlist);
     local_dictionary = dictionary_new(dictionary);
 
     while ((item=iter_next(&iter)) != NULL) {
@@ -476,6 +477,7 @@ Object *builtin_for(Dictionary *dictionary, Object *args) {
     }
 
     dictionary_free(local_dictionary);
+    garbage_collect(inlist);
 
     return list;
 }
