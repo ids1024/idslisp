@@ -458,8 +458,8 @@ Object *builtin_for(Dictionary *dictionary, Object *args) {
 
     if (seq_len(args) < 2)
         error_message("Wrong number of arguments to 'for'.");
-    else if (!object_isseq(seq_nth(args, 0)))
-        _arg_error("for", 0, "sequence", seq_nth(args, 0));
+    else if (!is_list(seq_nth(args, 0)))
+        _arg_error("for", 0, "list", seq_nth(args, 0));
     else if (seq_len(seq_nth(args, 0)) != 2 ||
              seq_nth(seq_nth(args, 0), 0)->type != SYMBOL ||
              !object_isseq(seq_nth(seq_nth(args, 0), 1)))
