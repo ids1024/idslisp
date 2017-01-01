@@ -22,6 +22,11 @@ void _va_gc(int num, ...);
     (items)[nitems-1] = value; \
 })
 
+/**
+ * @brief Runs garbage collector on error
+ * @param num Number of objects to GC
+ * @param ... Objects to GC
+ */
 #define TRY_START(num, ...) \
     jmp_buf tmp_error_jmp_buf; \
     memcpy(tmp_error_jmp_buf, error_jmp_buf, sizeof(jmp_buf)); \
@@ -31,6 +36,9 @@ void _va_gc(int num, ...);
         longjmp(error_jmp_buf, 1); \
     }
 
+/**
+ * @brief Cleans up changes made by @ref TRY_START
+ */
 #define TRY_END() \
     memcpy(error_jmp_buf, tmp_error_jmp_buf, sizeof(jmp_buf));
 
