@@ -35,12 +35,15 @@ Object *eval_progn(Dictionary *dictionary, Object *nodes) {
 
     value = &NIL_CONST;
 
+    TRY_START(1, value);
+
     iter = seq_iter(nodes);
     while ((nodeval=iter_next(&iter)) != NULL) {
         garbage_collect(value);
         value = eval(dictionary, nodeval);
     }
 
+    TRY_END();
     return value;
 }
 
@@ -108,7 +111,9 @@ Object *map_eval(Dictionary *dictionary, Object *list) {
 }
 
 Object *call_function(Dictionary *dictionary, Object *function, Object *args) {
-    Object *value, *tmpnodes;
+    Object *value, *tmpnodes=NULL;
+
+    TRY_START(1, tmpnodes);
  
     switch (function->type) {
         case BUILTIN:
@@ -128,5 +133,6 @@ Object *call_function(Dictionary *dictionary, Object *function, Object *args) {
             abort();
     }
 
+    TRY_END()
     return value;
 }

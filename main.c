@@ -58,14 +58,15 @@ void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
 
     objects = parse(text, &nobjects);
     for (i = 0; i < nobjects; i++) {
-        result = eval(dictionary, objects[i]);
-        if (print) {
-            object_print(result);
-            printf("\n");
+        if (setjmp(error_jmp_buf) == 0) {
+            result = eval(dictionary, objects[i]);
+            if (print) {
+                object_print(result);
+                printf("\n");
+            }
+            garbage_collect(result);
         }
-        // FIXME free on longjmp as well
         garbage_collect(objects[i]);
-        garbage_collect(result);
     }
     free(objects);
 }
@@ -79,7 +80,6 @@ int main(int argc, char *argv[]) {
     builtins_load(dictionary);
 
     if (argc == 1) {
-        setjmp(error_jmp_buf);
         while ((text = readline("> ")) != NULL) {
             add_history(text);
             parse_and_eval(dictionary, text, true);

@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 #include "util.h"
+#include "object.h"
 
 jmp_buf error_jmp_buf; ///< Stores destination for error longjmp
 
@@ -22,4 +23,18 @@ void error_message(char *format, ...) {
     fprintf(stderr, "\n");
     
     longjmp(error_jmp_buf, 1);
+}
+
+void _va_gc(int num, ...) {
+    va_list args;
+    int i;
+    Object *value;
+
+    va_start(args, num);
+    for (i=0; i<num; i++) {
+        value = va_arg(args, Object*);
+        if (value != NULL)
+            garbage_collect(value);
+    }
+    va_end(args);
 }
