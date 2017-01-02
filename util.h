@@ -32,7 +32,7 @@ void _va_gc(int num, ...);
     memcpy(tmp_error_jmp_buf, error_jmp_buf, sizeof(jmp_buf)); \
     if (setjmp(error_jmp_buf) != 0) { \
         _va_gc(num, __VA_ARGS__); \
-        memcpy(error_jmp_buf, tmp_error_jmp_buf, sizeof(jmp_buf)); \
+	TRY_END(); \
         longjmp(error_jmp_buf, 1); \
     }
 
