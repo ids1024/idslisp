@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "util.h"
 #include "object.h"
+#include "util.h"
 
 jmp_buf error_jmp_buf; ///< Stores destination for error longjmp
 
@@ -21,7 +21,7 @@ void error_message(char *format, ...) {
     va_end(args);
 
     fprintf(stderr, "\n");
-    
+
     longjmp(error_jmp_buf, 1);
 }
 
@@ -29,8 +29,8 @@ void _va_gc(int num, ...) {
     va_list args;
 
     va_start(args, num);
-    for (int i=0; i<num; i++) {
-        Object *value = va_arg(args, Object*);
+    for (int i = 0; i < num; i++) {
+        Object *value = va_arg(args, Object *);
         if (value != NULL)
             garbage_collect(value);
     }

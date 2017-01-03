@@ -1,18 +1,19 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "object.h"
 #include "sequence.h"
 
 Object NIL_CONST = {NIL}; ///< Global nil object
-Object T_CONST = {T}; ///< Global T object
+Object T_CONST = {T};     ///< Global T object
 
-#define _NEW_OBJECT(typename, utype, ...) ({ \
-        Object *object = malloc(sizeof(Object)); \
-        *object = (Object){typename, {.utype = __VA_ARGS__}, 1}; \
-        object; \
+#define _NEW_OBJECT(typename, utype, ...)                                      \
+    ({                                                                         \
+        Object *object = malloc(sizeof(Object));                               \
+        *object = (Object){typename, {.utype = __VA_ARGS__}, 1};               \
+        object;                                                                \
     })
 
 /**
@@ -26,7 +27,7 @@ void append_node(Object **list, Object **prev, Object *value) {
     if (*list == &NIL_CONST)
         *list = node;
     else {
-	assert((*prev)->type == CONS);
+        assert((*prev)->type == CONS);
         (*prev)->u.cons.cdr = node;
     }
     *prev = node;
@@ -36,10 +37,9 @@ void append_node(Object **list, Object **prev, Object *value) {
  * @brief Returns true if object is a list
  */
 bool is_list(Object *object) {
-    return(((object->type == CONS) && \
-            (object->u.cons.cdr == &NIL_CONST || \
-             object->u.cons.cdr->type == CONS)) || \
-           (object == &NIL_CONST));
+    return (((object->type == CONS) && (object->u.cons.cdr == &NIL_CONST ||
+                                        object->u.cons.cdr->type == CONS)) ||
+            (object == &NIL_CONST));
 }
 
 Object *new_int(long int value) {
@@ -100,7 +100,7 @@ bool to_bool(Object *value) {
  * @brief Returns true if object is callable
  */
 bool object_iscallable(Object *object) {
-    return (object->type == BUILTIN || object->type == FUNCTION || \
+    return (object->type == BUILTIN || object->type == FUNCTION ||
             object->type == SPECIAL);
 }
 
@@ -134,7 +134,7 @@ void garbage_collect(Object *object) {
                 garbage_collect(object->u.cons.cdr);
                 break;
             case VECTOR:
-                for (int i=0; i<object->u.vec.nitems; i++) {
+                for (int i = 0; i < object->u.vec.nitems; i++) {
                     garbage_collect(object->u.vec.items[i]);
                 }
                 free(object->u.vec.items);
@@ -192,19 +192,19 @@ void object_print(Object *object) {
         case DOUBLE:
             printf("%lf", object->u.lf);
             break;
-	case STRING:
+        case STRING:
             printf("\"%s\"", object->u.s);
-	    break;
+            break;
         case CHARACTER:
             printf("\\%c", object->u.c);
             break;
         case SYMBOL:
             printf("%s", object->u.s);
-	    break;
+            break;
         case CONS:
             _print_cons(object);
             break;
-	case VECTOR:
+        case VECTOR:
             printf("[");
             _print_seq(object);
             printf("]");
@@ -226,13 +226,13 @@ void object_print(Object *object) {
 
 Type object_type(Object *object) {
     if (object->type == CONS)
-    	return is_list(object) ? LIST : PAIR;
+        return is_list(object) ? LIST : PAIR;
     else
         return object->type;
 }
 
 char *type_name(Type type) {
-    switch(type) {
+    switch (type) {
         case INT:
             return "int";
         case DOUBLE:
@@ -257,9 +257,9 @@ char *type_name(Type type) {
             return "list";
         case PAIR:
             return "pair";
-	case VECTOR:
-	    return "vector";
-	default:
-	    abort();
+        case VECTOR:
+            return "vector";
+        default:
+            abort();
     }
 }

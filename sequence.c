@@ -1,6 +1,6 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "sequence.h"
 
@@ -96,7 +96,7 @@ int seq_len(Object *object) {
     else {
         Iter iter = seq_iter(object);
         Object *value;
-        while ((value=iter_next(&iter)) != NULL)
+        while ((value = iter_next(&iter)) != NULL)
             count++;
     }
 
@@ -119,7 +119,7 @@ Object *seq_nth(Object *object, int n) {
         Iter iter = seq_iter(object);
         Object *value;
         int index = 0;
-        while ((value=iter_next(&iter)) != NULL) {
+        while ((value = iter_next(&iter)) != NULL) {
             if (index == n)
                 return value;
             index++;

@@ -1,14 +1,14 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "builtins.h"
+#include "dictionary.h"
 #include "eval.h"
 #include "object.h"
-#include "builtins.h"
-#include "util.h"
-#include "dictionary.h"
 #include "sequence.h"
+#include "util.h"
 
 Object *_eval_list(Dictionary *dictionary, Object *object);
 
@@ -36,7 +36,7 @@ Object *eval_progn(Dictionary *dictionary, Object *nodes) {
 
     Iter iter = seq_iter(nodes);
     Object *nodeval;
-    while ((nodeval=iter_next(&iter)) != NULL) {
+    while ((nodeval = iter_next(&iter)) != NULL) {
         garbage_collect(value);
         value = eval(dictionary, nodeval);
     }
@@ -45,7 +45,8 @@ Object *eval_progn(Dictionary *dictionary, Object *nodes) {
     return value;
 }
 
-Object *call_user_function(Dictionary *dictionary, Object *function, Object *args) {
+Object *call_user_function(Dictionary *dictionary, Object *function,
+                           Object *args) {
     assert(function->type == FUNCTION);
     assert(is_list(seq_nth(function->u.obj, 0)));
 
@@ -54,10 +55,10 @@ Object *call_user_function(Dictionary *dictionary, Object *function, Object *arg
     Iter argiter = seq_iter(args);
     Iter valiter = seq_iter(seq_nth(function->u.obj, 0));
     Object *valueval;
-    while ((valueval=iter_next(&valiter)) != NULL) {
+    while ((valueval = iter_next(&valiter)) != NULL) {
         assert(valueval->type == SYMBOL);
-	Object *argval;
-        if ((argval=iter_next(&argiter)) == NULL)
+        Object *argval;
+        if ((argval = iter_next(&argiter)) == NULL)
             error_message("Wrong number of arguments to function.");
         dictionary_insert(local_dictionary, valueval->u.s, ref(argval));
     }
@@ -79,7 +80,7 @@ Object *_eval_list(Dictionary *dictionary, Object *object) {
         error_message("Cannot evaluate non-symbol.");
 
     char *command = seq_nth(object, 0)->u.s;
-    Object *args = object->u.cons.cdr; // TODO: Better API here? 
+    Object *args = object->u.cons.cdr; // TODO: Better API here?
     Object *function = dictionary_get(dictionary, command);
 
     if (function == NULL)
@@ -92,8 +93,8 @@ Object *_eval_list(Dictionary *dictionary, Object *object) {
 
 Object *map_eval(Dictionary *dictionary, Object *list) {
     Iter olditer = seq_iter(list);
-    Object *nodes=&NIL_CONST, *prev_node, *oldval;
-    while ((oldval=iter_next(&olditer)) != NULL) {
+    Object *nodes = &NIL_CONST, *prev_node, *oldval;
+    while ((oldval = iter_next(&olditer)) != NULL) {
         Object *value = eval(dictionary, oldval);
         append_node(&nodes, &prev_node, value);
     }
@@ -102,10 +103,10 @@ Object *map_eval(Dictionary *dictionary, Object *list) {
 }
 
 Object *call_function(Dictionary *dictionary, Object *function, Object *args) {
-    Object *value, *tmpnodes=NULL;
+    Object *value, *tmpnodes = NULL;
 
     TRY_START(1, tmpnodes);
- 
+
     switch (function->type) {
         case BUILTIN:
             tmpnodes = map_eval(dictionary, args);

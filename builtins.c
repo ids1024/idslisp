@@ -1,15 +1,14 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "builtins.h"
-#include "util.h"
+#include "dictionary.h"
 #include "eval.h"
 #include "parse.h"
-#include "dictionary.h"
 #include "sequence.h"
-
+#include "util.h"
 
 void _args_num(char *name, Object *args, int num) {
     if (seq_len(args) != num)
@@ -17,20 +16,20 @@ void _args_num(char *name, Object *args, int num) {
 }
 
 void _arg_error(char *func, int n, char *correct, Object *object) {
-    error_message("Argument %d to '%s' should be %s, is %s.",
-            n, func, correct, type_name(object_type(object)));
+    error_message("Argument %d to '%s' should be %s, is %s.", n, func, correct,
+                  type_name(object_type(object)));
 }
 
 void _args_check(char *name, Object *args, int num, ...) {
     Object *value;
     va_list vargs;
-    int i=1;
+    int i = 1;
 
     _args_num(name, args, num);
 
     va_start(vargs, num);
     Iter iter = seq_iter(args);
-    while ((value=iter_next(&iter)) != NULL) {
+    while ((value = iter_next(&iter)) != NULL) {
         Type type = va_arg(vargs, Type);
         if (object_type(value) != type)
             _arg_error(name, i, type_name(type), value);
@@ -39,70 +38,70 @@ void _args_check(char *name, Object *args, int num, ...) {
     va_end(vargs);
 }
 
+#define _OPERATOR_BUILTIN(operator, args)                                      \
+    ({                                                                         \
+        double dvalue;                                                         \
+        long int ivalue;                                                       \
+        bool isdouble = false, first = true;                                   \
+        Object *value;                                                         \
+        Iter iter = seq_iter(args);                                            \
+        while ((value = iter_next(&iter)) != NULL) {                           \
+            switch (value->type) {                                             \
+                case INT:                                                      \
+                    if (first)                                                 \
+                        dvalue = ivalue = value->u.ld;                         \
+                    else {                                                     \
+                        dvalue operator value->u.ld;                           \
+                        ivalue operator value->u.ld;                           \
+                    }                                                          \
+                    break;                                                     \
+                case DOUBLE:                                                   \
+                    isdouble = true;                                           \
+                    if (first)                                                 \
+                        dvalue = value->u.lf;                                  \
+                    else                                                       \
+                        dvalue operator value->u.lf;                           \
+                    break;                                                     \
+                default:                                                       \
+                    error_message("Invalid argument");                         \
+            }                                                                  \
+            first = false;                                                     \
+        }                                                                      \
+                                                                               \
+        (isdouble) ? new_double(dvalue) : new_int(ivalue);                     \
+    })
 
-#define _OPERATOR_BUILTIN(operator, args) ({ \
-    double dvalue; \
-    long int ivalue; \
-    bool isdouble=false, first=true; \
-    Object *value; \
-    Iter iter = seq_iter(args); \
-    while ((value=iter_next(&iter)) != NULL) { \
-        switch (value->type) { \
-            case INT: \
-                if (first) \
-                    dvalue = ivalue = value->u.ld; \
-                else { \
-                    dvalue operator value->u.ld; \
-                    ivalue operator value->u.ld; \
-                } \
-                break; \
-            case DOUBLE: \
-                isdouble = true; \
-                if (first) \
-                    dvalue = value->u.lf; \
-                else \
-                    dvalue operator value->u.lf; \
-                break; \
-            default: \
-                error_message("Invalid argument"); \
-        } \
-        first = false; \
-    } \
-    \
-    (isdouble) ? new_double(dvalue) : new_int(ivalue); \
-})
-
-#define _COMPARISON_BUILTIN(operator, args) ({ \
-    double num, newnum; \
-    bool result=true; \
-    Object *value; \
-    bool first = true; \
-    \
-    if (seq_len(args) < 1) \
-        error_message("Wrong number of arguments."); \
-    \
-    Iter iter = seq_iter(args); \
-    while ((value=iter_next(&iter)) != NULL) { \
-        switch (value->type) { \
-            case INT: \
-                newnum = value->u.ld; \
-                break; \
-            case DOUBLE: \
-                newnum = value->u.lf; \
-                break; \
-            default: \
-                error_message("Invalid argument"); \
-        } \
-        if (first) { \
-            num = newnum; \
-            first = false; \
-        } \
-        else if (!(num operator newnum)) \
-            result = false; \
-    } \
-    \
-    from_bool(result); \
-})
+#define _COMPARISON_BUILTIN(operator, args)                                    \
+    ({                                                                         \
+        double num, newnum;                                                    \
+        bool result = true;                                                    \
+        Object *value;                                                         \
+        bool first = true;                                                     \
+                                                                               \
+        if (seq_len(args) < 1)                                                 \
+            error_message("Wrong number of arguments.");                       \
+                                                                               \
+        Iter iter = seq_iter(args);                                            \
+        while ((value = iter_next(&iter)) != NULL) {                           \
+            switch (value->type) {                                             \
+                case INT:                                                      \
+                    newnum = value->u.ld;                                      \
+                    break;                                                     \
+                case DOUBLE:                                                   \
+                    newnum = value->u.lf;                                      \
+                    break;                                                     \
+                default:                                                       \
+                    error_message("Invalid argument");                         \
+            }                                                                  \
+            if (first) {                                                       \
+                num = newnum;                                                  \
+                first = false;                                                 \
+            } else if (!(num operator newnum))                                 \
+                result = false;                                                \
+        }                                                                      \
+                                                                               \
+        from_bool(result);                                                     \
+    })
 
 Object *builtin_add(Dictionary *dictionary, Object *args) {
     return _OPERATOR_BUILTIN(+=, args);
@@ -148,7 +147,7 @@ Object *builtin_not(Dictionary *dictionary, Object *args) {
 Object *builtin_or(Dictionary *dictionary, Object *args) {
     Object *value;
     Iter iter = seq_iter(args);
-    while ((value=iter_next(&iter)) != NULL) {
+    while ((value = iter_next(&iter)) != NULL) {
         if (to_bool(value))
             return ref(value);
     }
@@ -158,7 +157,7 @@ Object *builtin_or(Dictionary *dictionary, Object *args) {
 Object *builtin_and(Dictionary *dictionary, Object *args) {
     Object *value;
     Iter iter = seq_iter(args);
-    while ((value=iter_next(&iter)) != NULL) {
+    while ((value = iter_next(&iter)) != NULL) {
         if (!to_bool(value))
             return ref(value);
     }
@@ -213,7 +212,7 @@ Object *builtin_eval(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
-    Object *value, *results=&NIL_CONST, *lastres;
+    Object *value, *results = &NIL_CONST, *lastres;
 
     if (seq_len(args) < 2)
         error_message("Wrong number of arguments to 'mapcar'.");
@@ -227,7 +226,7 @@ Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
 
     int i = 0;
     Iter iter = seq_iter(args);
-    while ((value=iter_next(&iter)) != NULL) {
+    while ((value = iter_next(&iter)) != NULL) {
         if (!is_list(value))
             error_message("Argument to 'mapcar' must be list.");
         lists[i] = seq_iter(value);
@@ -235,8 +234,8 @@ Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
     }
 
     for (;;) {
-        Object *tmpargs=&NIL_CONST, *lastarg;
-        for (i=0; i<nlists; i++) {
+        Object *tmpargs = &NIL_CONST, *lastarg;
+        for (i = 0; i < nlists; i++) {
             value = iter_next(&lists[i]);
             if (value == NULL)
                 break;
@@ -248,7 +247,7 @@ Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
             break;
         }
 
-        value = call_function(dictionary, function, tmpargs); 
+        value = call_function(dictionary, function, tmpargs);
         garbage_collect(tmpargs);
         append_node(&results, &lastres, value);
     }
@@ -274,23 +273,23 @@ Object *builtin_nth(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_read_line(Dictionary *dictionary, Object *args) {
-    char *line=NULL;
-    size_t n=0;
+    char *line = NULL;
+    size_t n = 0;
 
     _args_num("read-line", args, 0);
     ssize_t len = getline(&line, &n, stdin);
-    line[len-1] = '\0'; // Remove newline
+    line[len - 1] = '\0'; // Remove newline
     return new_string(line);
 }
 
 Object *builtin_read(Dictionary *dictionary, Object *args) {
     int nobjects;
-    char *line=NULL;
-    size_t n=0;
+    char *line = NULL;
+    size_t n = 0;
 
     _args_num("read", args, 0);
     ssize_t len = getline(&line, &n, stdin);
-    line[len-1] = '\0'; // Remove newline
+    line[len - 1] = '\0'; // Remove newline
 
     Object **objects = parse(line, &nobjects);
     if (nobjects == 0)
@@ -326,12 +325,12 @@ Object *builtin_cdr(Dictionary *dictionary, Object *args) {
 
 Object *builtin_vector(Dictionary *dictionary, Object *args) {
     Object *value;
-    int i=0;
+    int i = 0;
 
-    Object **vector = malloc(seq_len(args) * sizeof(Object*));
+    Object **vector = malloc(seq_len(args) * sizeof(Object *));
 
     Iter iter = seq_iter(args);
-    while ((value=iter_next(&iter)) != NULL) {
+    while ((value = iter_next(&iter)) != NULL) {
         vector[i] = ref(value);
         i++;
     }
@@ -371,8 +370,8 @@ Object *builtin_let(Dictionary *dictionary, Object *args) {
     Dictionary *local_dictionary = dictionary_new(dictionary);
 
     Iter iter = seq_iter(args);
-    while ((value=iter_next(&iter)) != NULL) {
-        if (!is_list(value) || seq_len(value) != 2 || 
+    while ((value = iter_next(&iter)) != NULL) {
+        if (!is_list(value) || seq_len(value) != 2 ||
             seq_nth(value, 0)->type != SYMBOL)
             error_message("Improper format for 'let' command.");
         char *key = seq_nth(value, 0)->u.s;
@@ -383,7 +382,6 @@ Object *builtin_let(Dictionary *dictionary, Object *args) {
     value = eval_progn(local_dictionary, args->u.cons.cdr);
     dictionary_free(local_dictionary);
     return value;
-
 }
 
 Object *builtin_defun(Dictionary *dictionary, Object *args) {
@@ -395,9 +393,9 @@ Object *builtin_defun(Dictionary *dictionary, Object *args) {
         error_message("Argument 2 to 'defun' must be list.");
 
     // TODO: Verify correctness of formatting
-    
+
     char *name = seq_nth(args, 0)->u.s;
-    // TODO: Better API here? 
+    // TODO: Better API here?
     dictionary_insert(dictionary, name, new_function(ref(args->u.cons.cdr)));
     return new_symbol(name);
 }
@@ -421,7 +419,7 @@ Object *builtin_if(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_for(Dictionary *dictionary, Object *args) {
-    Object *item, *value, *list=&NIL_CONST, *prev;
+    Object *item, *value, *list = &NIL_CONST, *prev;
 
     if (seq_len(args) < 2)
         error_message("Wrong number of arguments to 'for'.");
@@ -437,7 +435,7 @@ Object *builtin_for(Dictionary *dictionary, Object *args) {
     Iter iter = seq_iter(inlist);
     Dictionary *local_dictionary = dictionary_new(dictionary);
 
-    while ((item=iter_next(&iter)) != NULL) {
+    while ((item = iter_next(&iter)) != NULL) {
         dictionary_insert(local_dictionary, key, ref(item));
         value = eval_progn(local_dictionary, args->u.cons.cdr);
         append_node(&list, &prev, value);
@@ -448,7 +446,7 @@ Object *builtin_for(Dictionary *dictionary, Object *args) {
 
     return list;
 }
- 
+
 void builtins_load(Dictionary *dictionary) {
     dictionary_insert(dictionary, "nil", &NIL_CONST);
     dictionary_insert(dictionary, "T", &T_CONST);

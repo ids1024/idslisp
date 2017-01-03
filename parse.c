@@ -1,17 +1,15 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "parse.h"
 #include "object.h"
+#include "parse.h"
+#include "sequence.h"
 #include "tokenize.h"
 #include "util.h"
-#include "sequence.h"
-
 
 Object *_parse_iter(char **tokens, int ntoks, int *i);
-
 
 Object *_str_to_num_object(char *text) {
     char *endptr;
@@ -31,8 +29,8 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
     Object *item;
 
     if (strcmp(tokens[*i], "\"") == 0) {
-        assert((ntoks >= *i+3) && (strcmp(tokens[*i+2], "\"") == 0));
-        item = new_string(tokens[*i+1]);
+        assert((ntoks >= *i + 3) && (strcmp(tokens[*i + 2], "\"") == 0));
+        item = new_string(tokens[*i + 1]);
         (*i) += 2;
     } else if (strncmp(tokens[*i], "\\", 1) == 0) {
         if (strlen(tokens[*i]) != 2)
@@ -65,14 +63,13 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
 }
 
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
-    Object *list=&NIL_CONST, *prev_node;
+    Object *list = &NIL_CONST, *prev_node;
 
-    for (; *i<ntoks; (*i)++) {
+    for (; *i < ntoks; (*i)++) {
         Object *item = _parse_one(tokens, ntoks, i);
 
         if (item == NULL) {
-            if (seq_len(list) == 3 &&
-                seq_nth(list, 1)->type == SYMBOL &&
+            if (seq_len(list) == 3 && seq_nth(list, 1)->type == SYMBOL &&
                 strcmp(seq_nth(list, 1)->u.s, ".") == 0) {
                 // Cons (eg. (1 . 2))
                 Object *car = ref(seq_nth(list, 0));
@@ -102,7 +99,7 @@ Object **parse(char *code, int *nobjects) {
     *nobjects = 0;
     char **tokens = tokenize(code, &ntoks);
 
-    for (int i=0; i<ntoks; i++) {
+    for (int i = 0; i < ntoks; i++) {
         Object *object = _parse_one(tokens, ntoks, &i);
 
         if (object == NULL)
@@ -112,7 +109,7 @@ Object **parse(char *code, int *nobjects) {
     }
 
     // Free the tokens array
-    for (int i=0; i<ntoks; i++)
+    for (int i = 0; i < ntoks; i++)
         free(tokens[i]);
     free(tokens);
 

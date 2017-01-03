@@ -1,11 +1,10 @@
-#include <stdlib.h>
-#include <stdbool.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "tokenize.h"
 #include "util.h"
-
 
 void _add_token(char ***tokens, int *ntoks, char **curtok, int *len) {
     if (*len != 0) {
@@ -24,18 +23,18 @@ char **tokenize(char *code, int *ntoks) {
 
     *ntoks = 0;
 
-    for (int i=0; code[i] != '\0'; i++) {
+    for (int i = 0; code[i] != '\0'; i++) {
         if (code[i] == '"') {
             _add_token(&tokens, ntoks, &curtok, &len);
             array_append(tokens, *ntoks, strdup("\""));
             instr = !instr;
         } else if (!instr && isspace(code[i])) {
             _add_token(&tokens, ntoks, &curtok, &len);
-        } else if (!instr && (code[i] == '(' || code[i] == ')' ||
-                              code[i] == '[' || code[i] == ']' ||
-                              code[i] == '\'')) {
+        } else if (!instr &&
+                   (code[i] == '(' || code[i] == ')' || code[i] == '[' ||
+                    code[i] == ']' || code[i] == '\'')) {
             _add_token(&tokens, ntoks, &curtok, &len);
-            array_append(tokens, *ntoks, strndup(code+i, 1));
+            array_append(tokens, *ntoks, strndup(code + i, 1));
         } else {
             array_append(curtok, len, code[i]);
         }

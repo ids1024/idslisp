@@ -1,30 +1,30 @@
-/** @file */ 
+/** @file */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <readline/readline.h>
 #include <readline/history.h>
+#include <readline/readline.h>
 
+#include "builtins.h"
+#include "dictionary.h"
+#include "eval.h"
 #include "object.h"
 #include "parse.h"
-#include "eval.h"
 #include "util.h"
-#include "dictionary.h"
-#include "builtins.h"
 
 /**
  * @brief Create string with contents of FILE
  */
 char *read_to_string(FILE *file) {
     // FIXME: performance
-    char *text=NULL, next_char;
-    int len=0;
+    char *text = NULL, next_char;
+    int len = 0;
 
     while ((next_char = fgetc(file)) != EOF)
-	array_append(text, len, next_char);
+        array_append(text, len, next_char);
     array_append(text, len, '\0');
 
     return text;
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
             parse_and_eval(dictionary, text, true);
             free(text);
         }
-	printf("\n");
+        printf("\n");
     } else if (argc == 2) {
         if (setjmp(error_jmp_buf) == 0) {
             text = read_file(argv[1]);

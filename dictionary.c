@@ -16,13 +16,13 @@ Dictionary *dictionary_new(Dictionary *parent) {
 _DictionaryEntry *_dictionary_get(Dictionary *dictionary, char *key) {
     _DictionaryEntry *entry;
 
-    for(entry=dictionary->first; entry!=NULL; entry=entry->next) {
+    for (entry = dictionary->first; entry != NULL; entry = entry->next) {
         if (strcmp(entry->key, key) == 0)
             return entry;
     }
     return NULL;
 }
-    
+
 Object *dictionary_get(Dictionary *dictionary, char *key) {
     _DictionaryEntry *entry = _dictionary_get(dictionary, key);
     if (entry != NULL)
@@ -53,11 +53,11 @@ void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
 
 void dictionary_free(Dictionary *dictionary) {
     _DictionaryEntry *entry = dictionary->first;
-    while(entry != NULL) {
+    while (entry != NULL) {
         free(entry->key);
         garbage_collect(entry->value);
         _DictionaryEntry *old_entry = entry;
-        entry=entry->next;
+        entry = entry->next;
         free(old_entry);
     }
 
