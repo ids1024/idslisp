@@ -213,8 +213,7 @@ Object *builtin_eval(Dictionary *dictionary, Object *args) {
 }
 
 Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
-    Object *value;
-    Object *tmpargs=&NIL_CONST, *lastarg, *results=&NIL_CONST, *lastres;
+    Object *value, *results=&NIL_CONST, *lastres;
 
     if (seq_len(args) < 2)
         error_message("Wrong number of arguments to 'mapcar'.");
@@ -236,7 +235,7 @@ Object *builtin_mapcar(Dictionary *dictionary, Object *args) {
     }
 
     for (;;) {
-        tmpargs = &NIL_CONST;
+        Object *tmpargs=&NIL_CONST, *lastarg;
         for (i=0; i<nlists; i++) {
             value = iter_next(&lists[i]);
             if (value == NULL)
