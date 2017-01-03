@@ -27,12 +27,10 @@ void error_message(char *format, ...) {
 
 void _va_gc(int num, ...) {
     va_list args;
-    int i;
-    Object *value;
 
     va_start(args, num);
-    for (i=0; i<num; i++) {
-        value = va_arg(args, Object*);
+    for (int i=0; i<num; i++) {
+        Object *value = va_arg(args, Object*);
         if (value != NULL)
             garbage_collect(value);
     }

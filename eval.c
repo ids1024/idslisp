@@ -30,14 +30,12 @@ Object *eval(Dictionary *dictionary, Object *arg) {
 }
 
 Object *eval_progn(Dictionary *dictionary, Object *nodes) {
-    Object *nodeval, *value;
-    Iter iter;
-
-    value = &NIL_CONST;
+    Object *value = &NIL_CONST;
 
     TRY_START(1, value);
 
-    iter = seq_iter(nodes);
+    Iter iter = seq_iter(nodes);
+    Object *nodeval;
     while ((nodeval=iter_next(&iter)) != NULL) {
         garbage_collect(value);
         value = eval(dictionary, nodeval);
@@ -48,26 +46,24 @@ Object *eval_progn(Dictionary *dictionary, Object *nodes) {
 }
 
 Object *call_user_function(Dictionary *dictionary, Object *function, Object *args) {
-    Dictionary *local_dictionary;
-    Object *argval, *valueval, *value;
-    Iter argiter, valiter;
-
     assert(function->type == FUNCTION);
     assert(is_list(seq_nth(function->u.obj, 0)));
 
     // Set arguments as local variables
-    local_dictionary = dictionary_new(dictionary);
-    argiter = seq_iter(args);
-    valiter = seq_iter(seq_nth(function->u.obj, 0));
+    Dictionary *local_dictionary = dictionary_new(dictionary);
+    Iter argiter = seq_iter(args);
+    Iter valiter = seq_iter(seq_nth(function->u.obj, 0));
+    Object *valueval;
     while ((valueval=iter_next(&valiter)) != NULL) {
         assert(valueval->type == SYMBOL);
+	Object *argval;
         if ((argval=iter_next(&argiter)) == NULL)
             error_message("Wrong number of arguments to function.");
         dictionary_insert(local_dictionary, valueval->u.s, ref(argval));
     }
 
     // Execute code; last value will be return value
-    value = eval_progn(local_dictionary, function->u.obj->u.cons.cdr);
+    Object *value = eval_progn(local_dictionary, function->u.obj->u.cons.cdr);
 
     dictionary_free(local_dictionary);
 
@@ -75,9 +71,6 @@ Object *call_user_function(Dictionary *dictionary, Object *function, Object *arg
 }
 
 Object *_eval_list(Dictionary *dictionary, Object *object) {
-    char *command;
-    Object *args, *function;
-
     assert(is_list(object));
 
     if (object == &NIL_CONST)
@@ -85,9 +78,9 @@ Object *_eval_list(Dictionary *dictionary, Object *object) {
     else if (seq_nth(object, 0)->type != SYMBOL)
         error_message("Cannot evaluate non-symbol.");
 
-    command = seq_nth(object, 0)->u.s;
-    args = object->u.cons.cdr; // TODO: Better API here? 
-    function = dictionary_get(dictionary, command);
+    char *command = seq_nth(object, 0)->u.s;
+    Object *args = object->u.cons.cdr; // TODO: Better API here? 
+    Object *function = dictionary_get(dictionary, command);
 
     if (function == NULL)
         error_message("'%s' undefined.", command);
@@ -98,12 +91,10 @@ Object *_eval_list(Dictionary *dictionary, Object *object) {
 }
 
 Object *map_eval(Dictionary *dictionary, Object *list) {
-    Object *nodes=&NIL_CONST, *prev_node, *value, *oldval;
-    Iter olditer;
-
-    olditer = seq_iter(list);
+    Iter olditer = seq_iter(list);
+    Object *nodes=&NIL_CONST, *prev_node, *oldval;
     while ((oldval=iter_next(&olditer)) != NULL) {
-        value = eval(dictionary, oldval);
+        Object *value = eval(dictionary, oldval);
         append_node(&nodes, &prev_node, value);
     }
 

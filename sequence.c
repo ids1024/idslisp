@@ -32,8 +32,6 @@ Object *_list_first(Object *object) {
 }
 
 Object *_list_next(Object **object) {
-    Object *value;
-
     if (*object == NULL)
         return NULL;
 
@@ -41,7 +39,7 @@ Object *_list_next(Object **object) {
     *object = (*object)->u.cons.cdr;
 
     if (!is_list(*object)) {
-        value = *object;
+        Object *value = *object;
         *object = NULL;
         return value;
     } else
@@ -90,15 +88,14 @@ Object *iter_next(Iter *iter) {
  */
 int seq_len(Object *object) {
     int count = 0;
-    Object *value;
-    Iter iter;
 
     if (object->type == VECTOR)
         count = object->u.vec.nitems;
     else if (object->type == STRING)
         count = strlen(object->u.s);
     else {
-        iter = seq_iter(object);
+        Iter iter = seq_iter(object);
+        Object *value;
         while ((value=iter_next(&iter)) != NULL)
             count++;
     }
@@ -110,10 +107,6 @@ int seq_len(Object *object) {
  * @brief Returns the nth element of a sequence
  */
 Object *seq_nth(Object *object, int n) {
-    int index = 0;
-    Object *value;
-    Iter iter;
-
     assert(n >= 0);
 
     if (object->type == VECTOR) {
@@ -123,7 +116,9 @@ Object *seq_nth(Object *object, int n) {
         if (strlen(object->u.s) > n)
             return new_character(object->u.s[n]);
     } else {
-        iter = seq_iter(object);
+        Iter iter = seq_iter(object);
+        Object *value;
+        int index = 0;
         while ((value=iter_next(&iter)) != NULL) {
             if (index == n)
                 return value;

@@ -15,14 +15,12 @@ Object *_parse_iter(char **tokens, int ntoks, int *i);
 
 Object *_str_to_num_object(char *text) {
     char *endptr;
-    long int inum;
-    double fnum;
 
-    inum = strtol(text, &endptr, 10);
+    long int inum = strtol(text, &endptr, 10);
     if (*endptr == '\0')
         return new_int(inum);
 
-    fnum = strtod(text, &endptr);
+    double fnum = strtod(text, &endptr);
     if (*endptr == '\0')
         return new_double(fnum);
 
@@ -67,18 +65,18 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
 }
 
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
-    Object *item, *car, *cdr,  *list=&NIL_CONST, *prev_node;
+    Object *list=&NIL_CONST, *prev_node;
 
     for (; *i<ntoks; (*i)++) {
-        item = _parse_one(tokens, ntoks, i);
+        Object *item = _parse_one(tokens, ntoks, i);
 
         if (item == NULL) {
             if (seq_len(list) == 3 &&
                 seq_nth(list, 1)->type == SYMBOL &&
                 strcmp(seq_nth(list, 1)->u.s, ".") == 0) {
                 // Cons (eg. (1 . 2))
-                car = ref(seq_nth(list, 0));
-                cdr = ref(seq_nth(list, 2));
+                Object *car = ref(seq_nth(list, 0));
+                Object *cdr = ref(seq_nth(list, 2));
                 garbage_collect(list);
                 return new_cons(car, cdr);
             }
@@ -98,15 +96,14 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
  * @param nobjects Number of objects read will be written here
  */
 Object **parse(char *code, int *nobjects) {
-    int ntoks, i;
-    char **tokens;
-    Object *object, **objects = NULL;
-    
-    *nobjects = 0;
-    tokens = tokenize(code, &ntoks);
+    Object **objects = NULL;
+    int ntoks;
 
-    for (i=0; i<ntoks; i++) {
-        object = _parse_one(tokens, ntoks, &i);
+    *nobjects = 0;
+    char **tokens = tokenize(code, &ntoks);
+
+    for (int i=0; i<ntoks; i++) {
+        Object *object = _parse_one(tokens, ntoks, &i);
 
         if (object == NULL)
             error_message("')' with no matching '('");
@@ -115,7 +112,7 @@ Object **parse(char *code, int *nobjects) {
     }
 
     // Free the tokens array
-    for (i=0; i<ntoks; i++)
+    for (int i=0; i<ntoks; i++)
         free(tokens[i]);
     free(tokens);
 

@@ -40,9 +40,7 @@ Dictionary *dictionary_top(Dictionary *dictionary) {
 }
 
 void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
-    _DictionaryEntry *entry;
-
-    entry = _dictionary_get(dictionary, key);
+    _DictionaryEntry *entry = _dictionary_get(dictionary, key);
     if (entry != NULL) {
         garbage_collect(entry->value);
         entry->value = value;
@@ -54,13 +52,11 @@ void dictionary_insert(Dictionary *dictionary, char *key, Object *value) {
 }
 
 void dictionary_free(Dictionary *dictionary) {
-    _DictionaryEntry *entry, *old_entry;
-    
-    entry = dictionary->first;
+    _DictionaryEntry *entry = dictionary->first;
     while(entry != NULL) {
         free(entry->key);
         garbage_collect(entry->value);
-        old_entry = entry;
+        _DictionaryEntry *old_entry = entry;
         entry=entry->next;
         free(old_entry);
     }

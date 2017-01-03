@@ -17,15 +17,16 @@ void _add_token(char ***tokens, int *ntoks, char **curtok, int *len) {
 }
 
 char **tokenize(char *code, int *ntoks) {
-    int i, len = 0;
+    int len = 0;
     char *curtok = NULL;
     char **tokens = NULL;
     bool instr = false;
 
     *ntoks = 0;
 
-    for (i=0; code[i] != '\0'; i++) {
+    for (int i=0; code[i] != '\0'; i++) {
         if (code[i] == '"') {
+            int len=0;
             _add_token(&tokens, ntoks, &curtok, &len);
             array_append(tokens, *ntoks, strdup("\""));
             instr = !instr;

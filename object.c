@@ -154,13 +154,10 @@ void garbage_collect(Object *object) {
 }
 
 void _print_seq(Object *object) {
-    Object *value;
-    Iter iter;
-
     assert(object_isseq(object));
 
-    iter = seq_iter(object);
-    value = iter_next(&iter);
+    Iter iter = seq_iter(object);
+    Object *value = iter_next(&iter);
     while (value != NULL) {
         object_print(value);
         value = iter_next(&iter);

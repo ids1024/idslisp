@@ -35,13 +35,10 @@ char *read_to_string(FILE *file) {
  * @param filename Path to file
  */
 char *read_file(char *filename) {
-    char *text;
-    FILE *file;
-    
-    file = fopen(filename, "r");
+    FILE *file = fopen(filename, "r");
     if (file == NULL)
         error_message("%s", strerror(errno));
-    text = read_to_string(file);
+    char *text = read_to_string(file);
     fclose(file);
     return text;
 }
@@ -53,13 +50,12 @@ char *read_file(char *filename) {
  * @param print If true, print return value(s)
  */
 void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
-    Object **objects, *result;
-    int nobjects, i;
+    int nobjects;
+    Object **objects = parse(text, &nobjects);
 
-    objects = parse(text, &nobjects);
-    for (i = 0; i < nobjects; i++) {
+    for (int i = 0; i < nobjects; i++) {
         if (setjmp(error_jmp_buf) == 0) {
-            result = eval(dictionary, objects[i]);
+            Object *result = eval(dictionary, objects[i]);
             if (print) {
                 object_print(result);
                 printf("\n");
@@ -73,10 +69,9 @@ void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
 
 int main(int argc, char *argv[]) {
     char *text;
-    Dictionary *dictionary;
     int status = 0;
 
-    dictionary = dictionary_new(NULL);
+    Dictionary *dictionary = dictionary_new(NULL);
     builtins_load(dictionary);
 
     if (argc == 1) {
