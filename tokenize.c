@@ -26,7 +26,6 @@ char **tokenize(char *code, int *ntoks) {
 
     for (int i=0; code[i] != '\0'; i++) {
         if (code[i] == '"') {
-            int len=0;
             _add_token(&tokens, ntoks, &curtok, &len);
             array_append(tokens, *ntoks, strdup("\""));
             instr = !instr;
