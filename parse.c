@@ -65,6 +65,8 @@ Object *_parse_one(char **tokens, int ntoks, int *i) {
 Object *_parse_iter(char **tokens, int ntoks, int *i) {
     Object *list = &NIL_CONST, *prev_node;
 
+    TRY_START(1, list);
+
     for (; *i < ntoks; (*i)++) {
         Object *item = _parse_one(tokens, ntoks, i);
 
@@ -75,8 +77,10 @@ Object *_parse_iter(char **tokens, int ntoks, int *i) {
                 Object *car = ref(seq_nth(list, 0));
                 Object *cdr = ref(seq_nth(list, 2));
                 garbage_collect(list);
+                TRY_END();
                 return new_cons(car, cdr);
             }
+            TRY_END();
             return list;
         }
 
@@ -99,6 +103,19 @@ Object **parse(char *code, int *nobjects) {
     *nobjects = 0;
     char **tokens = tokenize(code, &ntoks);
 
+    jmp_buf tmp_error_jmp_buf;
+    memcpy(tmp_error_jmp_buf, error_jmp_buf, sizeof(jmp_buf));
+    if (setjmp(error_jmp_buf) != 0) {
+        for (int i = 0; i < ntoks; i++)
+            free(tokens[i]);
+        free(tokens);
+	for (int i = 0; i < *nobjects; i++)
+            garbage_collect(objects[i]);
+	free(objects);
+        TRY_END();
+        longjmp(error_jmp_buf, 1);
+    }
+
     for (int i = 0; i < ntoks; i++) {
         Object *object = _parse_one(tokens, ntoks, &i);
 
@@ -113,5 +130,6 @@ Object **parse(char *code, int *nobjects) {
         free(tokens[i]);
     free(tokens);
 
+    TRY_END();
     return objects;
 }

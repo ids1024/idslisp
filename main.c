@@ -52,8 +52,20 @@ char *read_file(char *filename) {
 void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
     int nobjects;
     Object **objects = parse(text, &nobjects);
+    
+    int i = 0;
 
-    for (int i = 0; i < nobjects; i++) {
+    jmp_buf tmp_error_jmp_buf;
+    memcpy(tmp_error_jmp_buf, error_jmp_buf, sizeof(jmp_buf));
+    if (setjmp(error_jmp_buf) != 0) {
+    	for (; i < nobjects; i++)
+            garbage_collect(objects[i]);
+	free(objects);
+        TRY_END();
+        longjmp(error_jmp_buf, 1);
+    }
+
+    for (; i < nobjects; i++) {
         if (setjmp(error_jmp_buf) == 0) {
             Object *result = eval(dictionary, objects[i]);
             if (print) {
@@ -65,6 +77,8 @@ void parse_and_eval(Dictionary *dictionary, char *text, bool print) {
         garbage_collect(objects[i]);
     }
     free(objects);
+
+    TRY_END();
 }
 
 int main(int argc, char *argv[]) {
