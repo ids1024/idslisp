@@ -77,7 +77,8 @@ int main(int argc, char *argv[]) {
     if (argc == 1) {
         while ((text = readline("> ")) != NULL) {
             add_history(text);
-            parse_and_eval(dictionary, text, true);
+            if (setjmp(error_jmp_buf) == 0)
+                parse_and_eval(dictionary, text, true);
             free(text);
         }
         printf("\n");
